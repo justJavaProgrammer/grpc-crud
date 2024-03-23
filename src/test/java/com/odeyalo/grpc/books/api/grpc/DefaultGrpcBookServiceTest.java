@@ -10,6 +10,7 @@ import com.odeyalo.grpc.books.repository.InMemoryBookRepository;
 import com.odeyalo.grpc.books.service.BookService;
 import com.odeyalo.grpc.books.support.converter.BookConverterImpl;
 import com.odeyalo.grpc.books.support.converter.BookDtoConverterImpl;
+import com.odeyalo.grpc.books.support.converter.CreateBookInfoConverterImpl;
 import io.grpc.internal.testing.StreamRecorder;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -251,7 +252,8 @@ class DefaultGrpcBookServiceTest {
         public DefaultGrpcBookService build() {
             return new DefaultGrpcBookService(
                     new BookService(bookRepository, new BookConverterImpl()),
-                    new BookDtoConverterImpl());
+                    new BookDtoConverterImpl(),
+                    new CreateBookInfoConverterImpl());
         }
     }
 }

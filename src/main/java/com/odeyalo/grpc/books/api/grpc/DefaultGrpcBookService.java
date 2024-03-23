@@ -7,7 +7,9 @@ import com.odeyalo.grpc.books.client.book.BookServiceGrpc;
 import com.odeyalo.grpc.books.exception.BookNotFoundException;
 import com.odeyalo.grpc.books.model.Book;
 import com.odeyalo.grpc.books.service.BookService;
+import com.odeyalo.grpc.books.service.CreateBookInfo;
 import com.odeyalo.grpc.books.support.converter.BookDtoConverter;
+import com.odeyalo.grpc.books.support.converter.CreateBookInfoConverter;
 import io.grpc.stub.StreamObserver;
 import net.devh.boot.grpc.server.service.GrpcService;
 import org.jetbrains.annotations.NotNull;
@@ -20,10 +22,14 @@ import java.util.UUID;
 public final class DefaultGrpcBookService extends BookServiceGrpc.BookServiceImplBase {
     private final BookService bookService;
     private final BookDtoConverter bookDtoConverter;
+    private final CreateBookInfoConverter createBookInfoConverter;
 
-    public DefaultGrpcBookService(BookService bookService, BookDtoConverter bookDtoConverter) {
+    public DefaultGrpcBookService(BookService bookService,
+                                  BookDtoConverter bookDtoConverter,
+                                  CreateBookInfoConverter createBookInfoConverter) {
         this.bookService = bookService;
         this.bookDtoConverter = bookDtoConverter;
+        this.createBookInfoConverter = createBookInfoConverter;
     }
 
     @Override
@@ -41,21 +47,10 @@ public final class DefaultGrpcBookService extends BookServiceGrpc.BookServiceImp
     @Override
     public void addBook(CreateBookRequest request, StreamObserver<BookDto> responseObserver) {
 
-        Book book = Book.builder()
-                .name(request.getName())
-                .isbn(request.getIsbn())
-                .quantity(request.getQuantity())
-                .author(request.getAuthor())
-                .build();
+        CreateBookInfo createBookInfo = createBookInfoConverter.toCreateBookInfo(request);
 
-        bookService.save(book)
-                .map(it -> BookDto.newBuilder()
-                        .setId(it.getId().toString())
-                        .setName(it.getName())
-                        .setAuthor(it.getAuthor())
-                        .setIsbn(it.getIsbn())
-                        .setQuantity(it.getQuantity())
-                        .build())
+        bookService.save(createBookInfo)
+                .map(bookDtoConverter::toBookDto)
                 .subscribeOn(Schedulers.boundedElastic())
                 .subscribe(responseObserver::onNext, responseObserver::onError, responseObserver::onCompleted);
     }
