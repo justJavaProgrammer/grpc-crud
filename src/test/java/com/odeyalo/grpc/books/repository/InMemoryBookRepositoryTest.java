@@ -112,4 +112,22 @@ class InMemoryBookRepositoryTest {
                 .expectNext(book)
                 .verifyComplete();
     }
+
+    @Test
+    void shouldRemoveNothingBookIfNullIsProvided() {
+        // given
+        BookEntity book = BookEntityFaker.create().get();
+
+        var testable = InMemoryBookRepository.withBooks(book);
+        // when
+        testable.removeById(null)
+                .as(StepVerifier::create)
+                .verifyComplete();
+
+        // then expect nothing to return
+        testable.findBookById(book.getId())
+                .as(StepVerifier::create)
+                .expectNext(book)
+                .verifyComplete();
+    }
 }
