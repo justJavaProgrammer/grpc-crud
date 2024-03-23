@@ -1,6 +1,6 @@
 package com.odeyalo.grpc.books.exception;
 
-import com.odeyalo.grpc.books.client.book.Book;
+import com.odeyalo.grpc.books.api.grpc.Book;
 import io.grpc.Metadata;
 import io.grpc.Status;
 import io.grpc.StatusRuntimeException;

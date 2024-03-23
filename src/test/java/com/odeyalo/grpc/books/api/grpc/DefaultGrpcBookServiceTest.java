@@ -1,8 +1,9 @@
 package com.odeyalo.grpc.books.api.grpc;
 
-import com.odeyalo.grpc.books.client.book.Book.BookDto;
-import com.odeyalo.grpc.books.client.book.Book.CreateBookRequest;
-import com.odeyalo.grpc.books.client.book.Book.FetchBookRequest;
+import com.odeyalo.grpc.books.api.grpc.Book.BookDto;
+import com.odeyalo.grpc.books.api.grpc.Book.CreateBookRequest;
+import com.odeyalo.grpc.books.api.grpc.Book.FetchBookRequest;
+import com.odeyalo.grpc.books.api.grpc.Book.UpdateBookRequest;
 import com.odeyalo.grpc.books.entity.BookEntity;
 import com.odeyalo.grpc.books.exception.BookNotFoundException;
 import com.odeyalo.grpc.books.repository.BookRepository;
@@ -15,6 +16,7 @@ import io.grpc.internal.testing.StreamRecorder;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import testing.faker.BookEntityFaker;
+import testing.faker.UpdateBookRequestFaker;
 
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
@@ -22,7 +24,6 @@ import java.util.concurrent.TimeUnit;
 import static org.assertj.core.api.Assertions.assertThat;
 
 class DefaultGrpcBookServiceTest {
-
 
     @Nested
     class FetchBookByIdTest {
@@ -235,6 +236,31 @@ class DefaultGrpcBookServiceTest {
 
             return recorder.firstValue().get();
         }
+    }
+
+    @Nested
+    class UpdateBookTest {
+        public static final BookEntity EXISTING_BOOK = BookEntityFaker.create().get();
+
+        @Test
+        void shouldCompleteWithoutAnyError() throws Exception {
+            // given
+            DefaultGrpcBookService testable = TestableBuilder.builder()
+                    .withBooks(EXISTING_BOOK)
+                    .build();
+            UpdateBookRequest updateBookRequest = UpdateBookRequestFaker.withId(EXISTING_BOOK.getId()).get();
+
+            // when
+            StreamRecorder<BookDto> recorder = StreamRecorder.create();
+
+            testable.updateBook(updateBookRequest, recorder);
+
+            recorder.awaitCompletion(5, TimeUnit.SECONDS);
+            // then
+            assertThat(recorder.getError()).isNull();
+        }
+
+
     }
 
     static class TestableBuilder {

@@ -18,7 +18,14 @@ message CreateBookRequest {
 
 message UpdateBookRequest {
   string bookId = 1;
-  BookDto newBook = 2;
+  UpdateBookPayload newBook = 2;
+
+  message UpdateBookPayload {
+    string name = 1;
+    string author = 2;
+    string isbn = 3;
+    int32 quantity = 4;
+  }
 }
 
 message FetchBookRequest {
