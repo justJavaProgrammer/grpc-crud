@@ -157,88 +157,83 @@ class DefaultGrpcBookServiceTest {
                 .build();
 
         @Test
-        void shouldReturnSavedBookAsResponse() throws Exception {
-            DefaultGrpcBookService testable = TestableBuilder.builder().build();
-            StreamRecorder<BookDto> recorder = StreamRecorder.create();
-
-            testable.addBook(CREATE_NOVEL_REQUEST, recorder);
-
-            recorder.awaitCompletion(5, TimeUnit.SECONDS);
-
-            assertThat(recorder.firstValue().get()).isNotNull();
-        }
-
-        @Test
         void shouldReturnSavedBookWithGeneratedId() throws Exception {
             DefaultGrpcBookService testable = TestableBuilder.builder().build();
-            StreamRecorder<BookDto> recorder = StreamRecorder.create();
-
-            testable.addBook(CREATE_NOVEL_REQUEST, recorder);
-
-            recorder.awaitCompletion(5, TimeUnit.SECONDS);
-
-            String bookId = recorder.firstValue().get().getId();
-
-            assertThat(bookId).isNotEmpty();
+            // when
+            BookDto book = saveBook(testable);
+            // then
+            assertThat(book.getId()).isNotEmpty();
         }
 
         @Test
         void shouldReturnSavedBookWithTitleAsProvided() throws Exception {
             DefaultGrpcBookService testable = TestableBuilder.builder().build();
-            StreamRecorder<BookDto> recorder = StreamRecorder.create();
-
-            testable.addBook(CREATE_NOVEL_REQUEST, recorder);
-
-            recorder.awaitCompletion(5, TimeUnit.SECONDS);
-
-            String title = recorder.firstValue().get().getName();
-
-            assertThat(title).isEqualTo(CREATE_NOVEL_REQUEST.getName());
+            // when
+            BookDto book = saveBook(testable);
+            // then
+            assertThat(book.getName()).isEqualTo(CREATE_NOVEL_REQUEST.getName());
         }
 
         @Test
         void shouldReturnSavedBookWithIsbnAsProvided() throws Exception {
             DefaultGrpcBookService testable = TestableBuilder.builder().build();
-            StreamRecorder<BookDto> recorder = StreamRecorder.create();
-
-            testable.addBook(CREATE_NOVEL_REQUEST, recorder);
-
-            recorder.awaitCompletion(5, TimeUnit.SECONDS);
-
-            String Isbn = recorder.firstValue().get().getIsbn();
-
-            assertThat(Isbn).isEqualTo(CREATE_NOVEL_REQUEST.getIsbn());
+            // when
+            BookDto book = saveBook(testable);
+            // then
+            assertThat(book.getIsbn()).isEqualTo(CREATE_NOVEL_REQUEST.getIsbn());
         }
 
         @Test
         void shouldReturnSavedBookWithAuthorAsProvided() throws Exception {
             DefaultGrpcBookService testable = TestableBuilder.builder().build();
-            StreamRecorder<BookDto> recorder = StreamRecorder.create();
-
-            testable.addBook(CREATE_NOVEL_REQUEST, recorder);
-
-            recorder.awaitCompletion(5, TimeUnit.SECONDS);
-
-            String author = recorder.firstValue().get().getAuthor();
-
-            assertThat(author).isEqualTo(CREATE_NOVEL_REQUEST.getAuthor());
+            // when
+            BookDto book = saveBook(testable);
+            // then
+            assertThat(book.getAuthor()).isEqualTo(CREATE_NOVEL_REQUEST.getAuthor());
         }
 
         @Test
         void shouldReturnSavedBookWithQuantityAsProvided() throws Exception {
             DefaultGrpcBookService testable = TestableBuilder.builder().build();
+            // when
+            BookDto book = saveBook(testable);
+            // then
+            assertThat(book.getQuantity()).isEqualTo(CREATE_NOVEL_REQUEST.getQuantity());
+        }
+
+        @Test
+        void bookShouldBeFoundAfterSave() throws Exception {
+            DefaultGrpcBookService testable = TestableBuilder.builder().build();
+            // when
+            BookDto savedBook = saveBook(testable);
+
+            // then
+            BookDto bookDto = fetchBook(testable, savedBook);
+
+            assertThat(bookDto).isEqualTo(savedBook);
+        }
+
+        private BookDto fetchBook(DefaultGrpcBookService testable, BookDto savedBook) throws Exception {
+            StreamRecorder<BookDto> fetchBookRecorder = StreamRecorder.create();
+
+            FetchBookRequest fetchBookRequest = FetchBookRequest.newBuilder().setBookId(savedBook.getId()).build();
+
+            testable.fetchBook(fetchBookRequest, fetchBookRecorder);
+
+            fetchBookRecorder.awaitCompletion(5, TimeUnit.SECONDS);
+
+            return fetchBookRecorder.firstValue().get();
+        }
+
+        private BookDto saveBook(DefaultGrpcBookService testable) throws Exception {
             StreamRecorder<BookDto> recorder = StreamRecorder.create();
 
             testable.addBook(CREATE_NOVEL_REQUEST, recorder);
 
             recorder.awaitCompletion(5, TimeUnit.SECONDS);
 
-            int quantity = recorder.firstValue().get().getQuantity();
-
-            assertThat(quantity).isEqualTo(CREATE_NOVEL_REQUEST.getQuantity());
+            return recorder.firstValue().get();
         }
-
-
     }
 
     static class TestableBuilder {

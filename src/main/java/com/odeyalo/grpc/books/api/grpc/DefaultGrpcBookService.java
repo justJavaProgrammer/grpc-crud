@@ -41,15 +41,23 @@ public final class DefaultGrpcBookService extends BookServiceGrpc.BookServiceImp
     @Override
     public void addBook(CreateBookRequest request, StreamObserver<BookDto> responseObserver) {
 
+        Book book = Book.builder()
+                .name(request.getName())
+                .isbn(request.getIsbn())
+                .quantity(request.getQuantity())
+                .author(request.getAuthor())
+                .build();
 
-        responseObserver.onNext(BookDto.newBuilder()
-                        .setId("123")
-                        .setName(request.getName())
-                        .setAuthor(request.getAuthor())
-                        .setIsbn(request.getIsbn())
-                        .setQuantity(request.getQuantity())
-                .build());
-        responseObserver.onCompleted();
+        bookService.save(book)
+                .map(it -> BookDto.newBuilder()
+                        .setId(it.getId().toString())
+                        .setName(it.getName())
+                        .setAuthor(it.getAuthor())
+                        .setIsbn(it.getIsbn())
+                        .setQuantity(it.getQuantity())
+                        .build())
+                .subscribeOn(Schedulers.boundedElastic())
+                .subscribe(responseObserver::onNext, responseObserver::onError, responseObserver::onCompleted);
     }
 
     @NotNull

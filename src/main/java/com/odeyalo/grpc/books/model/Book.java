@@ -3,13 +3,14 @@ package com.odeyalo.grpc.books.model;
 import lombok.Builder;
 import lombok.Value;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.UUID;
 
 @Value
 @Builder
 public class Book {
-    @NotNull
+    @Nullable
     UUID id;
     @NotNull
     String name;
