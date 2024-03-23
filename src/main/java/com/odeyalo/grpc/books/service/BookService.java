@@ -41,14 +41,22 @@ public final class BookService {
                                  @NotNull UpdateBookInfo newBookValues) {
 
         return bookRepository.findBookById(bookId)
-                .map(it -> newBookValues.asBook(bookId))
-                // redundant converting, maybe UpdateBookInfo should provide method 'asBookEntity' similar to 'asBook(UUID)'?
-                .map(bookConverter::toBookEntity)
+                .map(it -> withUpdatedValues(newBookValues, it))
                 .flatMap(bookRepository::save)
                 .map(bookConverter::toBook)
                 .switchIfEmpty(Mono.defer(
                         () -> Mono.error(BookUpdateFailedException::defaultException)
                 ));
+    }
+
+    private static BookEntity withUpdatedValues(@NotNull UpdateBookInfo newBookValues, BookEntity it) {
+        return BookEntity.builder()
+                .id(it.getId())
+                .quantity(newBookValues.getQuantity())
+                .author(newBookValues.getAuthor())
+                .name(newBookValues.getName())
+                .isbn(newBookValues.getIsbn())
+                .build();
     }
 
     @NotNull
