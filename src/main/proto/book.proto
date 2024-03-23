@@ -1,0 +1,61 @@
+syntax = 'proto3';
+option java_package = 'com.odeyalo.grpc.books.client.book';
+
+message BookDto {
+  string id = 1;
+  string name = 2;
+  string author = 3;
+  string isbn = 4;
+  int32 quantity = 5;
+}
+
+message UpdateBookRequest {
+  string bookId = 1;
+  BookDto newBook = 2;
+}
+
+message FetchBookRequest {
+  string bookId = 1;
+}
+
+message DeleteBookRequest {
+  string bookId = 1;
+}
+
+message DeleteBookResponse {
+  DeletionStatus status = 1;
+}
+
+enum DeletionStatus {
+  SUCCESS = 0;
+  ENTITY_DOES_NOT_EXIST = 1;
+}
+
+service BookService {
+  /*
+    Fetch single book by its ID
+    @returns book by its ID or completing without producing any value
+    @version 1.0.0 - only ID field is supported
+   */
+  rpc fetchBook(FetchBookRequest) returns (BookDto);
+  /*
+    Add book to service
+    @returns created book or error if payload is malformed
+    @version 1.0.0
+   */
+  rpc addBook(BookDto) returns (BookDto);
+  /*
+     Update the  book by its ID with new values.
+     NOTE: FULL update is applied to the given Book entity. IT IS NOT PARTIAL UPDATE METHOD.
+     @returns updated book or nothing if the Book does not exist
+     @version 1.0.0
+    */
+  rpc updateBook(UpdateBookRequest) returns (BookDto);
+  /*
+       Remote the  book by its ID.
+       @returns response indicating the success of the deletion
+       @version 1.0.0
+      */
+  rpc removeBook(DeleteBookRequest) returns (DeleteBookResponse);
+
+}
