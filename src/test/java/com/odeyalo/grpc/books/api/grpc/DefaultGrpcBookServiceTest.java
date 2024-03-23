@@ -182,6 +182,20 @@ class DefaultGrpcBookServiceTest {
             assertThat(bookId).isNotEmpty();
         }
 
+        @Test
+        void shouldReturnSavedBookWithTitleAsProvided() throws Exception {
+            DefaultGrpcBookService testable = TestableBuilder.builder().build();
+            StreamRecorder<BookDto> recorder = StreamRecorder.create();
+
+            testable.addBook(CREATE_NOVEL_REQUEST, recorder);
+
+            recorder.awaitCompletion(5, TimeUnit.SECONDS);
+
+            String title = recorder.firstValue().get().getName();
+
+            assertThat(title).isEqualTo(CREATE_NOVEL_REQUEST.getName());
+        }
+
 
     }
 
