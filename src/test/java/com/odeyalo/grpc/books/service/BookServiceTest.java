@@ -1,6 +1,5 @@
 package com.odeyalo.grpc.books.service;
 
-import com.odeyalo.grpc.books.entity.BookEntity;
 import com.odeyalo.grpc.books.exception.BookUpdateFailedException;
 import com.odeyalo.grpc.books.model.Book;
 import com.odeyalo.grpc.books.repository.BookRepository;
@@ -9,17 +8,19 @@ import com.odeyalo.grpc.books.support.converter.BookConverter;
 import com.odeyalo.grpc.books.support.converter.BookConverterImpl;
 import org.junit.jupiter.api.Test;
 import reactor.test.StepVerifier;
-import testing.faker.BookEntityFaker;
 import testing.faker.BookFaker;
 import testing.faker.UpdateBookInfoFaker;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 import java.util.UUID;
 
 class BookServiceTest {
 
     @Test
     void shouldReturnExistingBookById() {
-        BookEntity book = BookEntityFaker.create().get();
+        Book book = BookFaker.create().get();
 
         var testable = TestableBuilder
                 .builder()
@@ -63,7 +64,7 @@ class BookServiceTest {
     @Test
     void shouldUpdateBookWithNewAuthorName() {
         // given
-        BookEntity book = BookEntityFaker.create().get();
+        Book book = BookFaker.create().get();
         UpdateBookInfo newBook = UpdateBookInfoFaker.create().get();
 
         var testable = TestableBuilder.builder()
@@ -97,7 +98,7 @@ class BookServiceTest {
 
     @Test
     void shouldRemoveExistingBook() {
-        BookEntity book = BookEntityFaker.create().get();
+        Book book = BookFaker.create().get();
 
         var testable = TestableBuilder
                 .builder()
@@ -114,21 +115,48 @@ class BookServiceTest {
                 .verifyComplete();
     }
 
+    @Test
+    void shouldNotRemoveAnyBookIfDoesNotExist() {
+        Book book = BookFaker.create().get();
+
+        var testable = TestableBuilder
+                .builder()
+                .withBooks(book)
+                .build();
+        // when
+        testable.removeById(UUID.randomUUID())
+                .as(StepVerifier::create)
+                .verifyComplete();
+
+        // then expect nothing to be found
+        testable.findBookById(book.getId())
+                .as(StepVerifier::create)
+                .expectNext(book)
+                .verifyComplete();
+    }
+
     static final class TestableBuilder {
-        private BookRepository bookRepository = new InMemoryBookRepository();
-        private BookConverter bookConverter = new BookConverterImpl();
+        private final BookRepository bookRepository = new InMemoryBookRepository();
+        private final BookConverter bookConverter = new BookConverterImpl();
+        private final List<Book> toSave = new ArrayList<>();
 
         public static TestableBuilder builder() {
             return new TestableBuilder();
         }
 
-        public TestableBuilder withBooks(BookEntity entity) {
-            bookRepository = InMemoryBookRepository.withBooks(entity);
+        public TestableBuilder withBooks(Book... books) {
+            toSave.addAll(Arrays.asList(books));
             return this;
         }
 
         public BookService build() {
-            return new BookService(bookRepository, bookConverter);
+            BookService bookService = new BookService(bookRepository, bookConverter);
+
+            for (Book book : toSave) {
+                bookService.save(book).block();
+            }
+
+            return bookService;
         }
     }
 
