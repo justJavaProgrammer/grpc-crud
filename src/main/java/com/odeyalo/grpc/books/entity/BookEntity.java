@@ -2,7 +2,7 @@ package com.odeyalo.grpc.books.entity;
 
 import lombok.Builder;
 import lombok.Data;
-import lombok.Value;
+import org.jetbrains.annotations.NotNull;
 
 import java.util.UUID;
 
@@ -10,4 +10,6 @@ import java.util.UUID;
 @Builder
 public class BookEntity {
     UUID id;
+    @NotNull
+    String name;
 }
