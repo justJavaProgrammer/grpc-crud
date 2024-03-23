@@ -1,5 +1,5 @@
 syntax = 'proto3';
-option java_package = 'com.odeyalo.grpc.books.client.book';
+option java_package = 'com.odeyalo.grpc.books.api.grpc';
 
 message BookDto {
   string id = 1;
@@ -10,10 +10,10 @@ message BookDto {
 }
 
 message CreateBookRequest {
-  string name = 2;
-  string author = 3;
-  string isbn = 4;
-  int32 quantity = 5;
+  string name = 1;
+  string author = 2;
+  string isbn = 3;
+  int32 quantity = 4;
 }
 
 message UpdateBookRequest {
