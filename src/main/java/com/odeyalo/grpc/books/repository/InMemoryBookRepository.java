@@ -3,6 +3,7 @@ package com.odeyalo.grpc.books.repository;
 import com.odeyalo.grpc.books.entity.BookEntity;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+import org.springframework.stereotype.Component;
 import reactor.core.publisher.Mono;
 
 import java.util.Arrays;
@@ -10,6 +11,7 @@ import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 
+@Component
 public final class InMemoryBookRepository implements BookRepository {
     private final Map<UUID, BookEntity> store = new ConcurrentHashMap<>();
 

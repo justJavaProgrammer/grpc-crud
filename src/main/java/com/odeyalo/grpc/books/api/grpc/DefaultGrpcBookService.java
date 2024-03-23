@@ -30,7 +30,7 @@ public final class DefaultGrpcBookService extends BookServiceGrpc.BookServiceImp
 
         doFetchBook(request)
                 .map(bookDtoConverter::toBookDto)
-                .subscribeOn(Schedulers.parallel())
+                .subscribeOn(Schedulers.boundedElastic())
                 .subscribe(responseObserver::onNext, responseObserver::onError, responseObserver::onCompleted);
 
     }
