@@ -39,7 +39,11 @@ public final class InMemoryBookRepository implements BookRepository {
     @Override
     @NotNull
     public Mono<BookEntity> save(@NotNull BookEntity entity) {
-        return null;
+        return Mono.fromCallable(() -> {
+                    store.put(entity.getId(), entity);
+                    return entity;
+                }
+        );
     }
 
     @Override

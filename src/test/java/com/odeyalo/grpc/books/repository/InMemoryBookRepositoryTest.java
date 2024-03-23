@@ -30,4 +30,22 @@ class InMemoryBookRepositoryTest {
                 .as(StepVerifier::create)
                 .verifyComplete();
     }
+
+    @Test
+    void shouldSaveBook() {
+        // given
+        BookEntity book = BookEntityFaker.create().get();
+
+        var testable = InMemoryBookRepository.empty();
+        // when
+        testable.save(book)
+                .as(StepVerifier::create)
+                .expectNextCount(1)
+                .verifyComplete();
+        // then
+        testable.findBookById(book.getId())
+                .as(StepVerifier::create)
+                .expectNext(book)
+                .verifyComplete();
+    }
 }
