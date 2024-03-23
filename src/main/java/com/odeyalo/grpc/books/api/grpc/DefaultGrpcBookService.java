@@ -8,8 +8,10 @@ import com.odeyalo.grpc.books.exception.BookNotFoundException;
 import com.odeyalo.grpc.books.model.Book;
 import com.odeyalo.grpc.books.service.BookService;
 import com.odeyalo.grpc.books.service.CreateBookInfo;
+import com.odeyalo.grpc.books.service.UpdateBookInfo;
 import com.odeyalo.grpc.books.support.converter.BookDtoConverter;
 import com.odeyalo.grpc.books.support.converter.CreateBookInfoConverter;
+import com.odeyalo.grpc.books.support.converter.UpdateBookInfoConverter;
 import io.grpc.stub.StreamObserver;
 import net.devh.boot.grpc.server.service.GrpcService;
 import org.jetbrains.annotations.NotNull;
@@ -23,13 +25,16 @@ public final class DefaultGrpcBookService extends BookServiceGrpc.BookServiceImp
     private final BookService bookService;
     private final BookDtoConverter bookDtoConverter;
     private final CreateBookInfoConverter createBookInfoConverter;
+    private final UpdateBookInfoConverter updateBookInfoConverter;
 
     public DefaultGrpcBookService(BookService bookService,
                                   BookDtoConverter bookDtoConverter,
-                                  CreateBookInfoConverter createBookInfoConverter) {
+                                  CreateBookInfoConverter createBookInfoConverter,
+                                  UpdateBookInfoConverter updateBookInfoConverter) {
         this.bookService = bookService;
         this.bookDtoConverter = bookDtoConverter;
         this.createBookInfoConverter = createBookInfoConverter;
+        this.updateBookInfoConverter = updateBookInfoConverter;
     }
 
     @Override
@@ -57,17 +62,16 @@ public final class DefaultGrpcBookService extends BookServiceGrpc.BookServiceImp
 
     @Override
     public void updateBook(UpdateBookRequest request, StreamObserver<BookDto> responseObserver) {
+        UpdateBookInfo updateBookInfo = toUpdateBookInfo(request);
 
-        BookDto bookDto = BookDto.newBuilder()
-                .setId(request.getBookId())
-                .setAuthor(request.getNewBook().getAuthor())
-                .setIsbn(request.getNewBook().getIsbn())
-                .setName(request.getNewBook().getName())
-                .setQuantity(request.getNewBook().getQuantity())
-                .build();
+        bookService.updateBook(UUID.fromString(request.getBookId()), updateBookInfo)
+                .map(bookDtoConverter::toBookDto)
+                .subscribeOn(Schedulers.boundedElastic())
+                .subscribe(responseObserver::onNext, responseObserver::onError, responseObserver::onCompleted);
+    }
 
-        responseObserver.onNext(bookDto);
-        responseObserver.onCompleted();
+    private UpdateBookInfo toUpdateBookInfo(UpdateBookRequest request) {
+        return updateBookInfoConverter.toUpdateBookInfo(request.getNewBook());
     }
 
     @NotNull

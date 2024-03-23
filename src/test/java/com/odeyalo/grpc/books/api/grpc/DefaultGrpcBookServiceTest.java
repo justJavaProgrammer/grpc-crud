@@ -12,6 +12,7 @@ import com.odeyalo.grpc.books.service.BookService;
 import com.odeyalo.grpc.books.support.converter.BookConverterImpl;
 import com.odeyalo.grpc.books.support.converter.BookDtoConverterImpl;
 import com.odeyalo.grpc.books.support.converter.CreateBookInfoConverterImpl;
+import com.odeyalo.grpc.books.support.converter.UpdateBookInfoConverterImpl;
 import io.grpc.internal.testing.StreamRecorder;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -340,6 +341,33 @@ class DefaultGrpcBookServiceTest {
             assertThat(bookDto.getId()).isEqualTo(updateBookRequest.getBookId());
         }
 
+        @Test
+        void shouldSaveUpdatedBook() throws Exception {
+            DefaultGrpcBookService testable = TestableBuilder.builder()
+                    .withBooks(EXISTING_BOOK)
+                    .build();
+
+            UpdateBookRequest updateBookRequest = UpdateBookRequestFaker.withId(EXISTING_BOOK.getId()).get();
+
+            BookDto responsePayload = updateBookRequest(testable, updateBookRequest);
+
+            BookDto foundBook = fetchBook(testable, responsePayload.getId());
+
+            assertThat(responsePayload).isEqualTo(foundBook);
+
+        }
+        private BookDto fetchBook(DefaultGrpcBookService testable, String bookId) throws Exception {
+            StreamRecorder<BookDto> fetchBookRecorder = StreamRecorder.create();
+
+            FetchBookRequest fetchBookRequest = FetchBookRequest.newBuilder().setBookId(bookId).build();
+
+            testable.fetchBook(fetchBookRequest, fetchBookRecorder);
+
+            fetchBookRecorder.awaitCompletion(5, TimeUnit.SECONDS);
+
+            return fetchBookRecorder.firstValue().get();
+        }
+
         private BookDto updateBookRequest(DefaultGrpcBookService testable, UpdateBookRequest updateBookRequest) throws Exception {
             StreamRecorder<BookDto> recorder = StreamRecorder.create();
 
@@ -366,7 +394,8 @@ class DefaultGrpcBookServiceTest {
             return new DefaultGrpcBookService(
                     new BookService(bookRepository, new BookConverterImpl()),
                     new BookDtoConverterImpl(),
-                    new CreateBookInfoConverterImpl());
+                    new CreateBookInfoConverterImpl(),
+                    new UpdateBookInfoConverterImpl());
         }
     }
 }
