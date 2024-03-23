@@ -34,10 +34,15 @@ public final class BookService {
     }
 
     @NotNull
-    public Mono<Book> updateBook(UUID bookId, Book newBookValues) {
-        return Mono.empty();
-    }
+    public Mono<Book> updateBook(@NotNull UUID bookId,
+                                 @NotNull UpdateBookInfo newBookValues) {
 
+        return bookRepository.findBookById(bookId)
+                .map(it -> newBookValues.asBook(bookId))
+                .map(bookConverter::toBookEntity)
+                .flatMap(bookRepository::save)
+                .map(bookConverter::toBook);
+    }
     @NotNull
     public Mono<Void> removeById(@Nullable UUID id) {
         return Mono.empty();

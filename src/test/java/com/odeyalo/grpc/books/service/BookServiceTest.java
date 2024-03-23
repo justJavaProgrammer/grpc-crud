@@ -10,6 +10,7 @@ import org.junit.jupiter.api.Test;
 import reactor.test.StepVerifier;
 import testing.faker.BookEntityFaker;
 import testing.faker.BookFaker;
+import testing.faker.UpdateBookInfoFaker;
 
 import java.util.UUID;
 
@@ -55,6 +56,29 @@ class BookServiceTest {
         testable.findBookById(book.getId())
                 .as(StepVerifier::create)
                 .expectNext(book)
+                .verifyComplete();
+    }
+
+    @Test
+    void shouldUpdateBookWithNewAuthorName() {
+        // given
+        BookEntity book = BookEntityFaker.create().get();
+        UpdateBookInfo newBook = UpdateBookInfoFaker.create().get();
+
+        var testable = TestableBuilder.builder()
+                .withBooks(book)
+                .build();
+        // when
+        testable.updateBook(book.getId(), newBook)
+                .as(StepVerifier::create)
+                .expectNextCount(1)
+                .verifyComplete();
+
+        // then
+        testable.findBookById(book.getId())
+                .map(Book::getAuthor)
+                .as(StepVerifier::create)
+                .expectNext(newBook.getAuthor())
                 .verifyComplete();
     }
 

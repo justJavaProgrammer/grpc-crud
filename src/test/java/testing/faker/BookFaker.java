@@ -25,4 +25,9 @@ public final class BookFaker {
     public Book get() {
         return builder.build();
     }
+
+    public BookFaker setId(UUID id) {
+        builder.id(id);
+        return this;
+    }
 }
