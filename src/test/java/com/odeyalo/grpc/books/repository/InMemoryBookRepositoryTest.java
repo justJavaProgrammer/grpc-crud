@@ -58,4 +58,22 @@ class InMemoryBookRepositoryTest {
                 .expectNext(book)
                 .verifyComplete();
     }
+
+    @Test
+    void shouldGenerateIdForBookIfIdIsNull() {
+        // given
+        BookEntity book = BookEntityFaker.create().setId(null).get();
+
+        var testable = InMemoryBookRepository.empty();
+        // when
+        testable.save(book)
+                .as(StepVerifier::create)
+                .expectNextMatches(it -> it.getId() != null)
+                .verifyComplete();
+        // then
+        testable.findBookById(book.getId())
+                .as(StepVerifier::create)
+                .expectNext(book)
+                .verifyComplete();
+    }
 }

@@ -30,7 +30,7 @@ public final class InMemoryBookRepository implements BookRepository {
     @Override
     @NotNull
     public Mono<BookEntity> findBookById(@Nullable UUID id) {
-        if (id == null) {
+        if ( id == null ) {
             return Mono.empty();
         }
         return Mono.justOrEmpty(
@@ -42,6 +42,9 @@ public final class InMemoryBookRepository implements BookRepository {
     @NotNull
     public Mono<BookEntity> save(@NotNull BookEntity entity) {
         return Mono.fromCallable(() -> {
+                    if ( entity.getId() == null ) {
+                        entity.setId(UUID.randomUUID());
+                    }
                     store.put(entity.getId(), entity);
                     return entity;
                 }
