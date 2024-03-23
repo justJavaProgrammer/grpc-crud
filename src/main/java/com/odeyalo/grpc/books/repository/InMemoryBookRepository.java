@@ -23,11 +23,15 @@ public final class InMemoryBookRepository implements BookRepository {
         return new InMemoryBookRepository(books);
     }
 
+    public static InMemoryBookRepository empty() {
+        return new InMemoryBookRepository();
+    }
+
     @Override
     @NotNull
     public Mono<BookEntity> findBookById(@Nullable UUID id) {
 
-        return Mono.just(
+        return Mono.justOrEmpty(
                 store.get(id)
         );
     }

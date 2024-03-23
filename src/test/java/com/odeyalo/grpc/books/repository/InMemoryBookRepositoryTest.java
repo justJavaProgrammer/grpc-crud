@@ -5,6 +5,8 @@ import org.junit.jupiter.api.Test;
 import reactor.test.StepVerifier;
 import testing.faker.BookEntityFaker;
 
+import java.util.UUID;
+
 class InMemoryBookRepositoryTest {
 
     @Test
@@ -16,6 +18,16 @@ class InMemoryBookRepositoryTest {
         testable.findBookById(book.getId())
                 .as(StepVerifier::create)
                 .expectNext(book)
+                .verifyComplete();
+    }
+
+    @Test
+    void shouldReturnNothingIfBookDoesNotExist() {
+
+        var testable = InMemoryBookRepository.empty();
+
+        testable.findBookById(UUID.randomUUID())
+                .as(StepVerifier::create)
                 .verifyComplete();
     }
 }
