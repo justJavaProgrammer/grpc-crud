@@ -36,6 +36,7 @@ public final class DefaultGrpcBookService extends BookServiceGrpc.BookServiceImp
     private BookDto toBookDto(BookEntity entity) {
         return BookDto.newBuilder()
                 .setId(entity.getId().toString())
+                .setName(entity.getName())
                 .build();
     }
 }
