@@ -4,6 +4,7 @@ import com.odeyalo.grpc.books.client.book.Book.BookDto;
 import com.odeyalo.grpc.books.client.book.Book.FetchBookRequest;
 import com.odeyalo.grpc.books.client.book.BookServiceGrpc;
 import com.odeyalo.grpc.books.entity.BookEntity;
+import com.odeyalo.grpc.books.exception.BookNotFoundException;
 import com.odeyalo.grpc.books.repository.BookRepository;
 import com.odeyalo.grpc.books.support.converter.BookDtoConverter;
 import io.grpc.stub.StreamObserver;
@@ -30,6 +31,7 @@ public final class DefaultGrpcBookService extends BookServiceGrpc.BookServiceImp
 
         doFetchBook(request)
                 .map(bookDtoConverter::toBookDto)
+                .switchIfEmpty(Mono.defer(() -> Mono.error(BookNotFoundException.defaultException())))
                 .subscribeOn(Schedulers.boundedElastic())
                 .subscribe(responseObserver::onNext, responseObserver::onError, responseObserver::onCompleted);
 

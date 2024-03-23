@@ -26,6 +26,10 @@ message DeleteBookResponse {
   DeletionStatus status = 1;
 }
 
+message ErrorResponse {
+  string message = 1;
+}
+
 enum DeletionStatus {
   SUCCESS = 0;
   ENTITY_DOES_NOT_EXIST = 1;

@@ -3,6 +3,7 @@ package com.odeyalo.grpc.books.api.grpc;
 import com.odeyalo.grpc.books.client.book.Book.BookDto;
 import com.odeyalo.grpc.books.client.book.Book.FetchBookRequest;
 import com.odeyalo.grpc.books.entity.BookEntity;
+import com.odeyalo.grpc.books.exception.BookNotFoundException;
 import com.odeyalo.grpc.books.repository.BookRepository;
 import com.odeyalo.grpc.books.repository.InMemoryBookRepository;
 import com.odeyalo.grpc.books.support.converter.BookDtoConverterImpl;
@@ -10,6 +11,7 @@ import io.grpc.internal.testing.StreamRecorder;
 import org.junit.jupiter.api.Test;
 import testing.faker.BookEntityFaker;
 
+import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -106,6 +108,25 @@ class DefaultGrpcBookServiceTest {
         BookDto found = fetchBook(testable, fetchBookRequest);
 
         assertThat(found.getQuantity()).isEqualTo(EXISTING_BOOK.getQuantity());
+    }
+
+    @Test
+    void shouldReturnNothingIfBookByIdDoesNotExist() throws Exception {
+        DefaultGrpcBookService testable = TestableBuilder.builder().build();
+
+        FetchBookRequest fetchBookRequest = FetchBookRequest.newBuilder()
+                .setBookId(UUID.randomUUID().toString())
+                .build();
+
+        StreamRecorder<BookDto> recorder = StreamRecorder.create();
+
+        testable.fetchBook(fetchBookRequest, recorder);
+
+        recorder.awaitCompletion(5, TimeUnit.SECONDS);
+
+        Throwable error = recorder.getError();
+
+        assertThat(error).isInstanceOf(BookNotFoundException.class);
     }
 
     private static BookDto fetchBook(DefaultGrpcBookService testable, FetchBookRequest fetchBookRequest) throws Exception {
