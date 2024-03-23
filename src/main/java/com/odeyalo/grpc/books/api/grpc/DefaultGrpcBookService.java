@@ -1,9 +1,6 @@
 package com.odeyalo.grpc.books.api.grpc;
 
-import com.odeyalo.grpc.books.api.grpc.Book.BookDto;
-import com.odeyalo.grpc.books.api.grpc.Book.CreateBookRequest;
-import com.odeyalo.grpc.books.api.grpc.Book.FetchBookRequest;
-import com.odeyalo.grpc.books.api.grpc.Book.UpdateBookRequest;
+import com.odeyalo.grpc.books.api.grpc.Book.*;
 import com.odeyalo.grpc.books.exception.BookNotFoundException;
 import com.odeyalo.grpc.books.model.Book;
 import com.odeyalo.grpc.books.service.BookService;
@@ -69,6 +66,11 @@ public final class DefaultGrpcBookService extends BookServiceGrpc.BookServiceImp
                 .subscribeOn(Schedulers.boundedElastic())
                 .onErrorMap(it -> BookNotFoundException.defaultException())
                 .subscribe(responseObserver::onNext, responseObserver::onError, responseObserver::onCompleted);
+    }
+
+    @Override
+    public void removeBook(DeleteBookRequest request, StreamObserver<DeleteBookResponse> responseObserver) {
+        responseObserver.onCompleted();
     }
 
     private UpdateBookInfo toUpdateBookInfo(UpdateBookRequest request) {

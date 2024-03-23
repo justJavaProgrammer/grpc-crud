@@ -10,7 +10,6 @@ import testing.faker.BookEntityFaker;
 import testing.faker.UpdateBookRequestFaker;
 
 import java.util.UUID;
-import java.util.concurrent.TimeUnit;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static testing.factory.DefaultGrpcBookServiceTestableBuilder.testableBuilder;
