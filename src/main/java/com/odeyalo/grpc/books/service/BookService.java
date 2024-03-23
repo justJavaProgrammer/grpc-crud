@@ -1,6 +1,7 @@
 package com.odeyalo.grpc.books.service;
 
 import com.odeyalo.grpc.books.entity.BookEntity;
+import com.odeyalo.grpc.books.exception.BookUpdateFailedException;
 import com.odeyalo.grpc.books.support.converter.BookConverter;
 import com.odeyalo.grpc.books.model.Book;
 import com.odeyalo.grpc.books.repository.BookRepository;
@@ -41,8 +42,12 @@ public final class BookService {
                 .map(it -> newBookValues.asBook(bookId))
                 .map(bookConverter::toBookEntity)
                 .flatMap(bookRepository::save)
-                .map(bookConverter::toBook);
+                .map(bookConverter::toBook)
+                .switchIfEmpty(Mono.defer(
+                        () -> Mono.error(BookUpdateFailedException::defaultException)
+                ));
     }
+
     @NotNull
     public Mono<Void> removeById(@Nullable UUID id) {
         return Mono.empty();

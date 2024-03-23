@@ -1,6 +1,7 @@
 package com.odeyalo.grpc.books.service;
 
 import com.odeyalo.grpc.books.entity.BookEntity;
+import com.odeyalo.grpc.books.exception.BookUpdateFailedException;
 import com.odeyalo.grpc.books.model.Book;
 import com.odeyalo.grpc.books.repository.BookRepository;
 import com.odeyalo.grpc.books.repository.InMemoryBookRepository;
@@ -80,6 +81,18 @@ class BookServiceTest {
                 .as(StepVerifier::create)
                 .expectNext(newBook.getAuthor())
                 .verifyComplete();
+    }
+
+    @Test
+    void shouldThrowExceptionIfUpdateIsRequestedButBookDoesNotExist() {
+        UpdateBookInfo newBook = UpdateBookInfoFaker.create().get();
+
+        var testable = TestableBuilder.builder().build();
+        // when
+        testable.updateBook(UUID.randomUUID(), newBook)
+                .as(StepVerifier::create)
+                .expectError(BookUpdateFailedException.class)
+                .verify();
     }
 
     static final class TestableBuilder {
