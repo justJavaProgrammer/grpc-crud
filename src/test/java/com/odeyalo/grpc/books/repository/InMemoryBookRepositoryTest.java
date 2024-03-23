@@ -94,4 +94,22 @@ class InMemoryBookRepositoryTest {
                 .as(StepVerifier::create)
                 .verifyComplete();
     }
+
+    @Test
+    void shouldRemoveNothingBookIfIdDoesNotExist() {
+        // given
+        BookEntity book = BookEntityFaker.create().get();
+
+        var testable = InMemoryBookRepository.withBooks(book);
+        // when
+        testable.removeById(UUID.randomUUID())
+                .as(StepVerifier::create)
+                .verifyComplete();
+
+        // then expect nothing to return
+        testable.findBookById(book.getId())
+                .as(StepVerifier::create)
+                .expectNext(book)
+                .verifyComplete();
+    }
 }
