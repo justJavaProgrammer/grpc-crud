@@ -40,6 +40,7 @@ public final class BookService {
 
         return bookRepository.findBookById(bookId)
                 .map(it -> newBookValues.asBook(bookId))
+                // redundant converting, maybe UpdateBookInfo should provide method 'asBookEntity' similar to 'asBook(UUID)'?
                 .map(bookConverter::toBookEntity)
                 .flatMap(bookRepository::save)
                 .map(bookConverter::toBook)
@@ -52,5 +53,4 @@ public final class BookService {
     public Mono<Void> removeById(@Nullable UUID id) {
         return bookRepository.removeById(id);
     }
-
 }
