@@ -45,7 +45,7 @@ public final class DefaultGrpcBookService extends BookServiceGrpc.BookServiceImp
         responseObserver.onNext(BookDto.newBuilder()
                         .setId("123")
                         .setName(request.getName())
-                        .setAuthor("123")
+                        .setAuthor(request.getAuthor())
                         .setIsbn(request.getIsbn())
                         .setQuantity(1)
                 .build());
