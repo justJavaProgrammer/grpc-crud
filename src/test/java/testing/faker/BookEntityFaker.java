@@ -15,7 +15,8 @@ public final class BookEntityFaker {
         builder
                 .id(UUID.randomUUID())
                 .name(faker.book().title())
-                .author(faker.book().author());
+                .author(faker.book().author())
+                .isbn(faker.code().isbn10());
     }
 
     public static BookEntityFaker create() {
@@ -38,6 +39,11 @@ public final class BookEntityFaker {
 
     public BookEntityFaker setAuthor(@NotNull String author) {
         builder.author(author);
+        return this;
+    }
+
+    public BookEntityFaker setIsbn(@NotNull String isbn) {
+        builder.isbn(isbn);
         return this;
     }
 }
