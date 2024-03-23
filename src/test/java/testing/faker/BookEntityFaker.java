@@ -1,8 +1,6 @@
 package testing.faker;
 
-import com.github.javafaker.Faker;
 import com.odeyalo.grpc.books.entity.BookEntity;
-import com.odeyalo.grpc.books.model.Book;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.UUID;
