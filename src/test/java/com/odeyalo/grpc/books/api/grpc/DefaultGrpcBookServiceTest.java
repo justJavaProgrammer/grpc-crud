@@ -271,7 +271,7 @@ class DefaultGrpcBookServiceTest {
             UpdateBookRequest updateBookRequest = UpdateBookRequestFaker.withId(EXISTING_BOOK.getId()).get();
 
             // when
-            BookDto bookDto = updateBookRequest(testable, updateBookRequest);
+            BookDto bookDto = updateBookRequestAndGetResponsePayload(testable, updateBookRequest);
 
             // then
             assertThat(bookDto.getName()).isEqualTo(updateBookRequest.getNewBook().getName());
@@ -287,7 +287,7 @@ class DefaultGrpcBookServiceTest {
             UpdateBookRequest updateBookRequest = UpdateBookRequestFaker.withId(EXISTING_BOOK.getId()).get();
 
             // when
-            BookDto bookDto = updateBookRequest(testable, updateBookRequest);
+            BookDto bookDto = updateBookRequestAndGetResponsePayload(testable, updateBookRequest);
 
             // then
             assertThat(bookDto.getAuthor()).isEqualTo(updateBookRequest.getNewBook().getAuthor());
@@ -303,7 +303,7 @@ class DefaultGrpcBookServiceTest {
             UpdateBookRequest updateBookRequest = UpdateBookRequestFaker.withId(EXISTING_BOOK.getId()).get();
 
             // when
-            BookDto bookDto = updateBookRequest(testable, updateBookRequest);
+            BookDto bookDto = updateBookRequestAndGetResponsePayload(testable, updateBookRequest);
 
             // then
             assertThat(bookDto.getIsbn()).isEqualTo(updateBookRequest.getNewBook().getIsbn());
@@ -319,7 +319,7 @@ class DefaultGrpcBookServiceTest {
             UpdateBookRequest updateBookRequest = UpdateBookRequestFaker.withId(EXISTING_BOOK.getId()).get();
 
             // when
-            BookDto bookDto = updateBookRequest(testable, updateBookRequest);
+            BookDto bookDto = updateBookRequestAndGetResponsePayload(testable, updateBookRequest);
 
             // then
             assertThat(bookDto.getQuantity()).isEqualTo(updateBookRequest.getNewBook().getQuantity());
@@ -335,7 +335,7 @@ class DefaultGrpcBookServiceTest {
             UpdateBookRequest updateBookRequest = UpdateBookRequestFaker.withId(EXISTING_BOOK.getId()).get();
 
             // when
-            BookDto bookDto = updateBookRequest(testable, updateBookRequest);
+            BookDto bookDto = updateBookRequestAndGetResponsePayload(testable, updateBookRequest);
 
             // then
             assertThat(bookDto.getId()).isEqualTo(updateBookRequest.getBookId());
@@ -349,14 +349,34 @@ class DefaultGrpcBookServiceTest {
 
             UpdateBookRequest updateBookRequest = UpdateBookRequestFaker.withId(EXISTING_BOOK.getId()).get();
 
-            BookDto responsePayload = updateBookRequest(testable, updateBookRequest);
+            BookDto responsePayload = updateBookRequestAndGetResponsePayload(testable, updateBookRequest);
 
-            BookDto foundBook = fetchBook(testable, responsePayload.getId());
+            BookDto foundBook = fetchBookAndGetResponsePayload(testable, responsePayload.getId());
 
             assertThat(responsePayload).isEqualTo(foundBook);
-
         }
-        private BookDto fetchBook(DefaultGrpcBookService testable, String bookId) throws Exception {
+
+        @Test
+        void shouldThrowErrorIfBookByIdDoesNotExist() throws Exception {
+            // given
+            DefaultGrpcBookService testable = TestableBuilder.builder()
+                    .withBooks(EXISTING_BOOK)
+                    .build();
+
+            UpdateBookRequest updateBookRequest = UpdateBookRequestFaker.withId(UUID.randomUUID()).get();
+            // when
+            StreamRecorder<BookDto> response = updateBookRequest(testable, updateBookRequest);
+
+            // then
+            assertThat(response.getError()).isInstanceOf(BookNotFoundException.class);
+        }
+
+
+        private BookDto fetchBookAndGetResponsePayload(DefaultGrpcBookService testable, String bookId) throws Exception {
+            return fetchBook(testable, bookId).firstValue().get();
+        }
+
+        private StreamRecorder<BookDto> fetchBook(DefaultGrpcBookService testable, String bookId) throws Exception {
             StreamRecorder<BookDto> fetchBookRecorder = StreamRecorder.create();
 
             FetchBookRequest fetchBookRequest = FetchBookRequest.newBuilder().setBookId(bookId).build();
@@ -365,16 +385,20 @@ class DefaultGrpcBookServiceTest {
 
             fetchBookRecorder.awaitCompletion(5, TimeUnit.SECONDS);
 
-            return fetchBookRecorder.firstValue().get();
+            return fetchBookRecorder;
         }
 
-        private BookDto updateBookRequest(DefaultGrpcBookService testable, UpdateBookRequest updateBookRequest) throws Exception {
+        private StreamRecorder<BookDto> updateBookRequest(DefaultGrpcBookService testable, UpdateBookRequest updateBookRequest) throws Exception {
             StreamRecorder<BookDto> recorder = StreamRecorder.create();
 
             testable.updateBook(updateBookRequest, recorder);
 
             recorder.awaitCompletion(5, TimeUnit.SECONDS);
-            return recorder.firstValue().get();
+            return recorder;
+        }
+
+        private BookDto updateBookRequestAndGetResponsePayload(DefaultGrpcBookService testable, UpdateBookRequest updateBookRequest) throws Exception {
+            return updateBookRequest(testable, updateBookRequest).firstValue().get();
         }
     }
 

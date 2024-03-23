@@ -67,6 +67,7 @@ public final class DefaultGrpcBookService extends BookServiceGrpc.BookServiceImp
         bookService.updateBook(UUID.fromString(request.getBookId()), updateBookInfo)
                 .map(bookDtoConverter::toBookDto)
                 .subscribeOn(Schedulers.boundedElastic())
+                .onErrorMap(it -> BookNotFoundException.defaultException())
                 .subscribe(responseObserver::onNext, responseObserver::onError, responseObserver::onCompleted);
     }
 
