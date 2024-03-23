@@ -8,6 +8,7 @@ import testing.faker.BookEntityFaker;
 
 import java.util.concurrent.TimeUnit;
 
+import static com.odeyalo.grpc.books.api.grpc.Book.DeletionStatus.SUCCESS;
 import static org.assertj.core.api.Assertions.assertThat;
 import static testing.factory.DefaultGrpcBookServiceTestableBuilder.testableBuilder;
 
@@ -30,5 +31,16 @@ class RemoveBookByIdTest extends AbstractBookClientTest {
         streamRecorder.awaitCompletion(5, TimeUnit.SECONDS);
 
         assertThat(streamRecorder.getError()).isNull();
+    }
+
+    @Test
+    void shouldReturnSuccessCompletionStatusIfBookExist() throws Exception {
+        final DefaultGrpcBookService testable = testableBuilder()
+                .withBooks(EXISTING_BOOK)
+                .build();
+
+        Book.DeleteBookResponse bookDeleteResponse = removeBookAndGetBody(testable, EXISTING_BOOK.getId());
+
+        assertThat(bookDeleteResponse.getStatus()).isEqualTo(SUCCESS);
     }
 }

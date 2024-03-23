@@ -70,6 +70,11 @@ public final class DefaultGrpcBookService extends BookServiceGrpc.BookServiceImp
 
     @Override
     public void removeBook(DeleteBookRequest request, StreamObserver<DeleteBookResponse> responseObserver) {
+
+        responseObserver.onNext(DeleteBookResponse.newBuilder()
+                .setStatus(DeletionStatus.SUCCESS)
+                .build());
+
         responseObserver.onCompleted();
     }
 

@@ -2,6 +2,7 @@ package com.odeyalo.grpc.books.api.grpc;
 
 import io.grpc.internal.testing.StreamRecorder;
 
+import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 
 abstract class AbstractBookClientTest {
@@ -43,5 +44,18 @@ abstract class AbstractBookClientTest {
 
     protected Book.BookDto updateBookRequestAndGetResponsePayload(DefaultGrpcBookService testable, Book.UpdateBookRequest updateBookRequest) throws Exception {
         return updateBookRequest(testable, updateBookRequest).firstValue().get();
+    }
+
+    protected Book.DeleteBookResponse removeBookAndGetBody(DefaultGrpcBookService testable, UUID id) throws Exception {
+        Book.DeleteBookRequest deleteBookRequest = Book.DeleteBookRequest.newBuilder()
+                .setBookId(id.toString())
+                .build();
+
+        final StreamRecorder<Book.DeleteBookResponse> streamRecorder = StreamRecorder.create();
+        testable.removeBook(deleteBookRequest, streamRecorder);
+
+        streamRecorder.awaitCompletion(5, TimeUnit.SECONDS);
+
+        return streamRecorder.firstValue().get();
     }
 }
