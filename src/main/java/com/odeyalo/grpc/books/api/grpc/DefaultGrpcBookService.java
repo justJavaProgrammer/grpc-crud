@@ -46,7 +46,7 @@ public final class DefaultGrpcBookService extends BookServiceGrpc.BookServiceImp
                         .setId("123")
                         .setName(request.getName())
                         .setAuthor("123")
-                        .setIsbn("12")
+                        .setIsbn(request.getIsbn())
                         .setQuantity(1)
                 .build());
         responseObserver.onCompleted();

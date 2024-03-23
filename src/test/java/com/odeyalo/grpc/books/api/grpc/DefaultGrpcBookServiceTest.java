@@ -196,6 +196,20 @@ class DefaultGrpcBookServiceTest {
             assertThat(title).isEqualTo(CREATE_NOVEL_REQUEST.getName());
         }
 
+        @Test
+        void shouldReturnSavedBookWithIsbnAsProvided() throws Exception {
+            DefaultGrpcBookService testable = TestableBuilder.builder().build();
+            StreamRecorder<BookDto> recorder = StreamRecorder.create();
+
+            testable.addBook(CREATE_NOVEL_REQUEST, recorder);
+
+            recorder.awaitCompletion(5, TimeUnit.SECONDS);
+
+            String Isbn = recorder.firstValue().get().getIsbn();
+
+            assertThat(Isbn).isEqualTo(CREATE_NOVEL_REQUEST.getIsbn());
+        }
+
 
     }
 
