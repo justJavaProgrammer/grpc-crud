@@ -32,6 +32,16 @@ class InMemoryBookRepositoryTest {
     }
 
     @Test
+    void shouldReturnNothingIfNullIsProvided() {
+
+        var testable = InMemoryBookRepository.empty();
+
+        testable.findBookById(null)
+                .as(StepVerifier::create)
+                .verifyComplete();
+    }
+
+    @Test
     void shouldSaveBook() {
         // given
         BookEntity book = BookEntityFaker.create().get();
