@@ -9,6 +9,13 @@ message BookDto {
   int32 quantity = 5;
 }
 
+message CreateBookRequest {
+  string name = 2;
+  string author = 3;
+  string isbn = 4;
+  int32 quantity = 5;
+}
+
 message UpdateBookRequest {
   string bookId = 1;
   BookDto newBook = 2;
@@ -47,7 +54,7 @@ service BookService {
     @returns created book or error if payload is malformed
     @version 1.0.0
    */
-  rpc addBook(BookDto) returns (BookDto);
+  rpc addBook(CreateBookRequest) returns (BookDto);
   /*
      Update the  book by its ID with new values.
      NOTE: FULL update is applied to the given Book entity. IT IS NOT PARTIAL UPDATE METHOD.

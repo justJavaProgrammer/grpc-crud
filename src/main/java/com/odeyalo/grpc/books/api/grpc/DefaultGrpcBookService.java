@@ -1,6 +1,7 @@
 package com.odeyalo.grpc.books.api.grpc;
 
 import com.odeyalo.grpc.books.client.book.Book.BookDto;
+import com.odeyalo.grpc.books.client.book.Book.CreateBookRequest;
 import com.odeyalo.grpc.books.client.book.Book.FetchBookRequest;
 import com.odeyalo.grpc.books.client.book.BookServiceGrpc;
 import com.odeyalo.grpc.books.exception.BookNotFoundException;
@@ -35,6 +36,20 @@ public final class DefaultGrpcBookService extends BookServiceGrpc.BookServiceImp
                 .subscribeOn(Schedulers.boundedElastic())
                 .subscribe(responseObserver::onNext, responseObserver::onError, responseObserver::onCompleted);
 
+    }
+
+    @Override
+    public void addBook(CreateBookRequest request, StreamObserver<BookDto> responseObserver) {
+
+
+        responseObserver.onNext(BookDto.newBuilder()
+                        .setId("123")
+                        .setName("unknown")
+                        .setAuthor("123")
+                        .setIsbn("12")
+                        .setQuantity(1)
+                .build());
+        responseObserver.onCompleted();
     }
 
     @NotNull
