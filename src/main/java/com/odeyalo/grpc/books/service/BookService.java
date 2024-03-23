@@ -49,6 +49,11 @@ public final class BookService {
                 ));
     }
 
+    @NotNull
+    public Mono<Void> removeById(@Nullable UUID id) {
+        return bookRepository.removeById(id);
+    }
+
     private static BookEntity withUpdatedValues(@NotNull UpdateBookInfo newBookValues, BookEntity it) {
         return BookEntity.builder()
                 .id(it.getId())
@@ -59,12 +64,7 @@ public final class BookService {
                 .build();
     }
 
-    @NotNull
-    public Mono<Void> removeById(@Nullable UUID id) {
-        return bookRepository.removeById(id);
-    }
-
-    private BookEntity createBookEntity(CreateBookInfo book) {
+    private static BookEntity createBookEntity(CreateBookInfo book) {
         return BookEntity.builder()
                 .name(book.getName())
                 .author(book.getAuthor())
