@@ -83,12 +83,12 @@ class FetchBookByIdTest extends AbstractBookClientTest {
     void shouldReturnNothingIfBookByIdDoesNotExist() throws Exception {
         DefaultGrpcBookService testable = testableBuilder().build();
 
-        StreamRecorder<Book.BookDto> recorder = fetchRandomBook(testable);
+        StreamRecorder<Book.BookDto> recorder = fetchNotExistingBook(testable);
 
         assertThat(recorder.getError()).isInstanceOf(BookNotFoundException.class);
     }
 
-    private StreamRecorder<Book.BookDto> fetchRandomBook(DefaultGrpcBookService testable) throws Exception {
+    private StreamRecorder<Book.BookDto> fetchNotExistingBook(DefaultGrpcBookService testable) throws Exception {
         return super.fetchBook(testable, UUID.randomUUID().toString());
     }
 }
