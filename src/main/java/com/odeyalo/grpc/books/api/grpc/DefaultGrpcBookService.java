@@ -3,9 +3,9 @@ package com.odeyalo.grpc.books.api.grpc;
 import com.odeyalo.grpc.books.client.book.Book.BookDto;
 import com.odeyalo.grpc.books.client.book.Book.FetchBookRequest;
 import com.odeyalo.grpc.books.client.book.BookServiceGrpc;
-import com.odeyalo.grpc.books.entity.BookEntity;
 import com.odeyalo.grpc.books.exception.BookNotFoundException;
-import com.odeyalo.grpc.books.repository.BookRepository;
+import com.odeyalo.grpc.books.model.Book;
+import com.odeyalo.grpc.books.service.BookService;
 import com.odeyalo.grpc.books.support.converter.BookDtoConverter;
 import io.grpc.stub.StreamObserver;
 import net.devh.boot.grpc.server.service.GrpcService;
@@ -17,11 +17,11 @@ import java.util.UUID;
 
 @GrpcService
 public final class DefaultGrpcBookService extends BookServiceGrpc.BookServiceImplBase {
-    private final BookRepository bookRepository;
+    private final BookService bookService;
     private final BookDtoConverter bookDtoConverter;
 
-    public DefaultGrpcBookService(BookRepository bookRepository, BookDtoConverter bookDtoConverter) {
-        this.bookRepository = bookRepository;
+    public DefaultGrpcBookService(BookService bookService, BookDtoConverter bookDtoConverter) {
+        this.bookService = bookService;
         this.bookDtoConverter = bookDtoConverter;
     }
 
@@ -38,7 +38,7 @@ public final class DefaultGrpcBookService extends BookServiceGrpc.BookServiceImp
     }
 
     @NotNull
-    private Mono<BookEntity> doFetchBook(@NotNull FetchBookRequest request) {
-        return bookRepository.findBookById(UUID.fromString(request.getBookId()));
+    private Mono<Book> doFetchBook(@NotNull FetchBookRequest request) {
+        return bookService.findBookById(UUID.fromString(request.getBookId()));
     }
 }

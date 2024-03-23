@@ -7,10 +7,12 @@ import com.odeyalo.grpc.books.model.Book;
 import com.odeyalo.grpc.books.repository.BookRepository;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+import org.springframework.stereotype.Component;
 import reactor.core.publisher.Mono;
 
 import java.util.UUID;
 
+@Component
 public final class BookService {
     private final BookRepository bookRepository;
     private final BookConverter bookConverter;

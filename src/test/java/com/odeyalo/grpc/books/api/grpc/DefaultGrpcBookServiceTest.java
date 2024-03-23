@@ -6,6 +6,8 @@ import com.odeyalo.grpc.books.entity.BookEntity;
 import com.odeyalo.grpc.books.exception.BookNotFoundException;
 import com.odeyalo.grpc.books.repository.BookRepository;
 import com.odeyalo.grpc.books.repository.InMemoryBookRepository;
+import com.odeyalo.grpc.books.service.BookService;
+import com.odeyalo.grpc.books.support.converter.BookConverterImpl;
 import com.odeyalo.grpc.books.support.converter.BookDtoConverterImpl;
 import io.grpc.internal.testing.StreamRecorder;
 import org.junit.jupiter.api.Test;
@@ -153,7 +155,9 @@ class DefaultGrpcBookServiceTest {
         }
 
         public DefaultGrpcBookService build() {
-            return new DefaultGrpcBookService(bookRepository, new BookDtoConverterImpl());
+            return new DefaultGrpcBookService(
+                    new BookService(bookRepository, new BookConverterImpl()),
+                    new BookDtoConverterImpl());
         }
     }
 }
