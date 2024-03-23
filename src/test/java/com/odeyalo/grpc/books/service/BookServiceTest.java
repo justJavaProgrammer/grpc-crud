@@ -1,5 +1,6 @@
 package com.odeyalo.grpc.books.service;
 
+import com.odeyalo.grpc.books.entity.BookEntity;
 import com.odeyalo.grpc.books.exception.BookUpdateFailedException;
 import com.odeyalo.grpc.books.model.Book;
 import com.odeyalo.grpc.books.repository.BookRepository;
@@ -9,11 +10,9 @@ import com.odeyalo.grpc.books.support.converter.BookConverterImpl;
 import org.junit.jupiter.api.Test;
 import reactor.test.StepVerifier;
 import testing.faker.BookFaker;
+import testing.faker.CreateBookInfoFaker;
 import testing.faker.UpdateBookInfoFaker;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
 import java.util.UUID;
 
 class BookServiceTest {
@@ -44,20 +43,20 @@ class BookServiceTest {
     }
 
     @Test
-    void shouldSaveBook() {
+    void shouldSaveBookAndUseBookTitleAsWasProvided() {
         // given
-        Book book = BookFaker.create().get();
+        CreateBookInfo createBookInfo = CreateBookInfoFaker.create().get();
 
         var testable = TestableBuilder.builder().build();
         // when
-        testable.save(book)
-                .as(StepVerifier::create)
-                .expectNextCount(1)
-                .verifyComplete();
+        Book savedBook = testable.save(createBookInfo).block();
+
         // then
-        testable.findBookById(book.getId())
+        //noinspection DataFlowIssue
+        testable.findBookById(savedBook.getId())
+                .map(Book::getName)
                 .as(StepVerifier::create)
-                .expectNext(book)
+                .expectNext(createBookInfo.getName())
                 .verifyComplete();
     }
 
@@ -138,25 +137,22 @@ class BookServiceTest {
     static final class TestableBuilder {
         private final BookRepository bookRepository = new InMemoryBookRepository();
         private final BookConverter bookConverter = new BookConverterImpl();
-        private final List<Book> toSave = new ArrayList<>();
 
         public static TestableBuilder builder() {
             return new TestableBuilder();
         }
 
         public TestableBuilder withBooks(Book... books) {
-            toSave.addAll(Arrays.asList(books));
+            for (Book book : books) {
+                BookEntity entity = bookConverter.toBookEntity(book);
+                bookRepository.save(entity).block();
+            }
             return this;
         }
 
         public BookService build() {
-            BookService bookService = new BookService(bookRepository, bookConverter);
 
-            for (Book book : toSave) {
-                bookService.save(book).block();
-            }
-
-            return bookService;
+            return new BookService(bookRepository, bookConverter);
         }
     }
 

@@ -29,8 +29,8 @@ public final class BookService {
     }
 
     @NotNull
-    public Mono<Book> save(@NotNull Book book) {
-        BookEntity bookEntity = bookConverter.toBookEntity(book);
+    public Mono<Book> save(@NotNull CreateBookInfo book) {
+        BookEntity bookEntity = createBookEntity(book);
 
         return bookRepository.save(bookEntity)
                 .map(bookConverter::toBook);
@@ -54,5 +54,14 @@ public final class BookService {
     @NotNull
     public Mono<Void> removeById(@Nullable UUID id) {
         return bookRepository.removeById(id);
+    }
+
+    private BookEntity createBookEntity(CreateBookInfo book) {
+        return BookEntity.builder()
+                .name(book.getName())
+                .author(book.getAuthor())
+                .quantity(book.getQuantity())
+                .isbn(book.getIsbn())
+                .build();
     }
 }

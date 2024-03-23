@@ -1,16 +1,14 @@
-package com.odeyalo.grpc.books.model;
+package com.odeyalo.grpc.books.service;
 
+import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Value;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.UUID;
-
 @Value
 @Builder
-public class Book {
-    @NotNull
-    UUID id;
+@AllArgsConstructor(staticName = "of")
+public class CreateBookInfo {
     @NotNull
     String name;
     @NotNull
