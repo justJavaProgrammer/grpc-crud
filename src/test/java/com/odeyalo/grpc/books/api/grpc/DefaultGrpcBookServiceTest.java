@@ -89,6 +89,24 @@ class DefaultGrpcBookServiceTest {
         assertThat(found.getAuthor()).isEqualTo(EXISTING_BOOK.getAuthor());
     }
 
+    @Test
+    void shouldFetchBookByItsIdAndReturnCorrectQuantity() throws Exception {
+        final DefaultGrpcBookService testable = TestableBuilder
+                .builder()
+                .withBooks(EXISTING_BOOK)
+                .build();
+
+        String bookId = EXISTING_BOOK.getId().toString();
+
+        FetchBookRequest fetchBookRequest = FetchBookRequest.newBuilder()
+                .setBookId(bookId)
+                .build();
+
+        BookDto found = fetchBook(testable, fetchBookRequest);
+
+        assertThat(found.getQuantity()).isEqualTo(EXISTING_BOOK.getQuantity());
+    }
+
     private static BookDto fetchBook(DefaultGrpcBookService testable, FetchBookRequest fetchBookRequest) throws Exception {
         StreamRecorder<BookDto> recorder = StreamRecorder.create();
 

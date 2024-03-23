@@ -39,6 +39,7 @@ public final class DefaultGrpcBookService extends BookServiceGrpc.BookServiceImp
                 .setName(entity.getName())
                 .setIsbn(entity.getIsbn())
                 .setAuthor(entity.getAuthor())
+                .setQuantity(entity.getQuantity())
                 .build();
     }
 }
