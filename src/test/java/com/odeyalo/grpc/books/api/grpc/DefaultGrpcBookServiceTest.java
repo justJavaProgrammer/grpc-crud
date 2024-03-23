@@ -5,6 +5,7 @@ import com.odeyalo.grpc.books.client.book.Book.FetchBookRequest;
 import com.odeyalo.grpc.books.entity.BookEntity;
 import com.odeyalo.grpc.books.repository.BookRepository;
 import com.odeyalo.grpc.books.repository.InMemoryBookRepository;
+import com.odeyalo.grpc.books.support.converter.BookDtoConverterImpl;
 import io.grpc.internal.testing.StreamRecorder;
 import org.junit.jupiter.api.Test;
 import testing.faker.BookEntityFaker;
@@ -131,7 +132,7 @@ class DefaultGrpcBookServiceTest {
         }
 
         public DefaultGrpcBookService build() {
-            return new DefaultGrpcBookService(bookRepository);
+            return new DefaultGrpcBookService(bookRepository, new BookDtoConverterImpl());
         }
     }
 }
