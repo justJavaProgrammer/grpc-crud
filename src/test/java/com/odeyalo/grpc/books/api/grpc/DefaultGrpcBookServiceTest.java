@@ -224,6 +224,20 @@ class DefaultGrpcBookServiceTest {
             assertThat(author).isEqualTo(CREATE_NOVEL_REQUEST.getAuthor());
         }
 
+        @Test
+        void shouldReturnSavedBookWithQuantityAsProvided() throws Exception {
+            DefaultGrpcBookService testable = TestableBuilder.builder().build();
+            StreamRecorder<BookDto> recorder = StreamRecorder.create();
+
+            testable.addBook(CREATE_NOVEL_REQUEST, recorder);
+
+            recorder.awaitCompletion(5, TimeUnit.SECONDS);
+
+            int quantity = recorder.firstValue().get().getQuantity();
+
+            assertThat(quantity).isEqualTo(CREATE_NOVEL_REQUEST.getQuantity());
+        }
+
 
     }
 
