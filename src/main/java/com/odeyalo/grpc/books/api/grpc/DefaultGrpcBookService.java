@@ -71,11 +71,14 @@ public final class DefaultGrpcBookService extends BookServiceGrpc.BookServiceImp
     @Override
     public void removeBook(DeleteBookRequest request, StreamObserver<DeleteBookResponse> responseObserver) {
 
-        responseObserver.onNext(DeleteBookResponse.newBuilder()
-                .setStatus(DeletionStatus.SUCCESS)
-                .build());
-
-        responseObserver.onCompleted();
+        bookService.removeById(UUID.fromString(request.getBookId()))
+                .thenReturn(
+                        DeleteBookResponse.newBuilder()
+                                .setStatus(DeletionStatus.SUCCESS)
+                                .build()
+                )
+                .subscribeOn(Schedulers.boundedElastic())
+                .subscribe(responseObserver::onNext, responseObserver::onError, responseObserver::onCompleted);
     }
 
     private UpdateBookInfo toUpdateBookInfo(UpdateBookRequest request) {

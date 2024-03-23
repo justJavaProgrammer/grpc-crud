@@ -47,6 +47,10 @@ abstract class AbstractBookClientTest {
     }
 
     protected Book.DeleteBookResponse removeBookAndGetBody(DefaultGrpcBookService testable, UUID id) throws Exception {
+        return removeBook(testable, id).firstValue().get();
+    }
+
+    protected StreamRecorder<Book.DeleteBookResponse> removeBook(DefaultGrpcBookService testable, UUID id) throws Exception {
         Book.DeleteBookRequest deleteBookRequest = Book.DeleteBookRequest.newBuilder()
                 .setBookId(id.toString())
                 .build();
@@ -56,6 +60,6 @@ abstract class AbstractBookClientTest {
 
         streamRecorder.awaitCompletion(5, TimeUnit.SECONDS);
 
-        return streamRecorder.firstValue().get();
+        return streamRecorder;
     }
 }

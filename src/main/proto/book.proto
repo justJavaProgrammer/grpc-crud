@@ -45,8 +45,8 @@ message ErrorResponse {
 }
 
 enum DeletionStatus {
+  // Always success even if entity does not exist
   SUCCESS = 0;
-  ENTITY_DOES_NOT_EXIST = 1;
 }
 
 service BookService {
