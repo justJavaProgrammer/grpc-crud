@@ -54,6 +54,6 @@ public final class InMemoryBookRepository implements BookRepository {
     @Override
     @NotNull
     public Mono<Void> removeById(@Nullable UUID id) {
-        return null;
+        return Mono.fromRunnable(() -> store.remove(id));
     }
 }
