@@ -16,4 +16,5 @@ public class BookEntity {
     String author;
     @NotNull
     String isbn;
+    int quantity;
 }
