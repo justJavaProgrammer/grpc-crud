@@ -57,7 +57,17 @@ public final class DefaultGrpcBookService extends BookServiceGrpc.BookServiceImp
 
     @Override
     public void updateBook(UpdateBookRequest request, StreamObserver<BookDto> responseObserver) {
-        super.updateBook(request, responseObserver);
+
+        BookDto bookDto = BookDto.newBuilder()
+                .setId(request.getBookId())
+                .setAuthor(request.getNewBook().getAuthor())
+                .setIsbn(request.getNewBook().getIsbn())
+                .setName(request.getNewBook().getName())
+                .setQuantity(request.getNewBook().getQuantity())
+                .build();
+
+        responseObserver.onNext(bookDto);
+        responseObserver.onCompleted();
     }
 
     @NotNull

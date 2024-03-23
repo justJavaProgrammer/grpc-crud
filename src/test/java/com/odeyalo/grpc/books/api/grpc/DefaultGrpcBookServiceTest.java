@@ -260,7 +260,94 @@ class DefaultGrpcBookServiceTest {
             assertThat(recorder.getError()).isNull();
         }
 
+        @Test
+        void shouldReturnNameOfTheBookThatWasProvidedInPayload() throws Exception {
+            // given
+            DefaultGrpcBookService testable = TestableBuilder.builder()
+                    .withBooks(EXISTING_BOOK)
+                    .build();
 
+            UpdateBookRequest updateBookRequest = UpdateBookRequestFaker.withId(EXISTING_BOOK.getId()).get();
+
+            // when
+            BookDto bookDto = updateBookRequest(testable, updateBookRequest);
+
+            // then
+            assertThat(bookDto.getName()).isEqualTo(updateBookRequest.getNewBook().getName());
+        }
+
+        @Test
+        void shouldReturnAuthorOfTheBookThatWasProvidedInPayload() throws Exception {
+            // given
+            DefaultGrpcBookService testable = TestableBuilder.builder()
+                    .withBooks(EXISTING_BOOK)
+                    .build();
+
+            UpdateBookRequest updateBookRequest = UpdateBookRequestFaker.withId(EXISTING_BOOK.getId()).get();
+
+            // when
+            BookDto bookDto = updateBookRequest(testable, updateBookRequest);
+
+            // then
+            assertThat(bookDto.getAuthor()).isEqualTo(updateBookRequest.getNewBook().getAuthor());
+        }
+
+        @Test
+        void shouldReturnIsbnOfTheBookThatWasProvided() throws Exception {
+            // given
+            DefaultGrpcBookService testable = TestableBuilder.builder()
+                    .withBooks(EXISTING_BOOK)
+                    .build();
+
+            UpdateBookRequest updateBookRequest = UpdateBookRequestFaker.withId(EXISTING_BOOK.getId()).get();
+
+            // when
+            BookDto bookDto = updateBookRequest(testable, updateBookRequest);
+
+            // then
+            assertThat(bookDto.getIsbn()).isEqualTo(updateBookRequest.getNewBook().getIsbn());
+        }
+
+        @Test
+        void shouldReturnQuantityOfTheBookThatWasProvidedInPayload() throws Exception {
+            // given
+            DefaultGrpcBookService testable = TestableBuilder.builder()
+                    .withBooks(EXISTING_BOOK)
+                    .build();
+
+            UpdateBookRequest updateBookRequest = UpdateBookRequestFaker.withId(EXISTING_BOOK.getId()).get();
+
+            // when
+            BookDto bookDto = updateBookRequest(testable, updateBookRequest);
+
+            // then
+            assertThat(bookDto.getQuantity()).isEqualTo(updateBookRequest.getNewBook().getQuantity());
+        }
+
+        @Test
+        void shouldReturnIdOfTheBookThatWasRequested() throws Exception {
+            // given
+            DefaultGrpcBookService testable = TestableBuilder.builder()
+                    .withBooks(EXISTING_BOOK)
+                    .build();
+
+            UpdateBookRequest updateBookRequest = UpdateBookRequestFaker.withId(EXISTING_BOOK.getId()).get();
+
+            // when
+            BookDto bookDto = updateBookRequest(testable, updateBookRequest);
+
+            // then
+            assertThat(bookDto.getId()).isEqualTo(updateBookRequest.getBookId());
+        }
+
+        private BookDto updateBookRequest(DefaultGrpcBookService testable, UpdateBookRequest updateBookRequest) throws Exception {
+            StreamRecorder<BookDto> recorder = StreamRecorder.create();
+
+            testable.updateBook(updateBookRequest, recorder);
+
+            recorder.awaitCompletion(5, TimeUnit.SECONDS);
+            return recorder.firstValue().get();
+        }
     }
 
     static class TestableBuilder {
