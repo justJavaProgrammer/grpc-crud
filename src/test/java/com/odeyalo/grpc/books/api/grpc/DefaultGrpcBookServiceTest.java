@@ -167,6 +167,22 @@ class DefaultGrpcBookServiceTest {
 
             assertThat(recorder.firstValue().get()).isNotNull();
         }
+
+        @Test
+        void shouldReturnSavedBookWithGeneratedId() throws Exception {
+            DefaultGrpcBookService testable = TestableBuilder.builder().build();
+            StreamRecorder<BookDto> recorder = StreamRecorder.create();
+
+            testable.addBook(CREATE_NOVEL_REQUEST, recorder);
+
+            recorder.awaitCompletion(5, TimeUnit.SECONDS);
+
+            String bookId = recorder.firstValue().get().getId();
+
+            assertThat(bookId).isNotEmpty();
+        }
+
+
     }
 
     static class TestableBuilder {
