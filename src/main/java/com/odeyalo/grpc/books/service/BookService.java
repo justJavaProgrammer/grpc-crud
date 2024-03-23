@@ -50,7 +50,7 @@ public final class BookService {
 
     @NotNull
     public Mono<Void> removeById(@Nullable UUID id) {
-        return Mono.empty();
+        return bookRepository.removeById(id);
     }
 
 }

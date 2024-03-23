@@ -95,6 +95,25 @@ class BookServiceTest {
                 .verify();
     }
 
+    @Test
+    void shouldRemoveExistingBook() {
+        BookEntity book = BookEntityFaker.create().get();
+
+        var testable = TestableBuilder
+                .builder()
+                .withBooks(book)
+                .build();
+        // when
+        testable.removeById(book.getId())
+                .as(StepVerifier::create)
+                .verifyComplete();
+
+        // then expect nothing to be found
+        testable.findBookById(book.getId())
+                .as(StepVerifier::create)
+                .verifyComplete();
+    }
+
     static final class TestableBuilder {
         private BookRepository bookRepository = new InMemoryBookRepository();
         private BookConverter bookConverter = new BookConverterImpl();
