@@ -79,12 +79,9 @@ public final class DefaultGrpcBookService extends BookServiceGrpc.BookServiceImp
     @Override
     public void removeBook(DeleteBookRequest request, StreamObserver<DeleteBookResponse> responseObserver) {
 
-        bookService.removeById(UUID.fromString(request.getBookId()))
-                .thenReturn(
-                        DeleteBookResponse.newBuilder()
-                                .setStatus(DeletionStatus.SUCCESS)
-                                .build()
-                )
+        validate(request)
+                .flatMap(it -> bookService.removeById(UUID.fromString(request.getBookId()))
+                        .thenReturn(successDeleteResponse()))
                 .subscribeOn(Schedulers.boundedElastic())
                 .subscribe(responseObserver::onNext, responseObserver::onError, responseObserver::onCompleted);
     }
@@ -99,6 +96,13 @@ public final class DefaultGrpcBookService extends BookServiceGrpc.BookServiceImp
                     }
                     return Mono.error(RequestValidationException.defaultException());
                 });
+    }
+
+    @NotNull
+    private static DeleteBookResponse successDeleteResponse() {
+        return DeleteBookResponse.newBuilder()
+                .setStatus(DeletionStatus.SUCCESS)
+                .build();
     }
 
     @NotNull

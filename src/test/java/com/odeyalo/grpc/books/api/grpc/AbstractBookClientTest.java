@@ -1,5 +1,6 @@
 package com.odeyalo.grpc.books.api.grpc;
 
+import ch.qos.logback.core.testUtil.XTeeOutputStream;
 import io.grpc.internal.testing.StreamRecorder;
 
 import java.util.UUID;
@@ -51,8 +52,12 @@ abstract class AbstractBookClientTest {
     }
 
     protected StreamRecorder<Book.DeleteBookResponse> removeBook(DefaultGrpcBookService testable, UUID id) throws Exception {
+        return removeBook(testable, id.toString());
+    }
+
+    protected StreamRecorder<Book.DeleteBookResponse> removeBook(DefaultGrpcBookService testable, String id) throws Exception {
         Book.DeleteBookRequest deleteBookRequest = Book.DeleteBookRequest.newBuilder()
-                .setBookId(id.toString())
+                .setBookId(id)
                 .build();
 
         final StreamRecorder<Book.DeleteBookResponse> streamRecorder = StreamRecorder.create();

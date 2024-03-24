@@ -1,6 +1,7 @@
 package com.odeyalo.grpc.books.api.grpc;
 
 import com.odeyalo.grpc.books.entity.BookEntity;
+import com.odeyalo.grpc.books.exception.RequestValidationException;
 import io.grpc.internal.testing.StreamRecorder;
 import org.junit.jupiter.api.Test;
 import testing.faker.BookEntityFaker;
@@ -21,6 +22,16 @@ class RemoveBookByIdTest extends AbstractBookClientTest {
         final StreamRecorder<Book.DeleteBookResponse> streamRecorder = removeBook(testable, EXISTING_BOOK.getId());
 
         assertThat(streamRecorder.getError()).isNull();
+    }
+
+    @Test
+    void shouldReturnErrorIfBookIdIsNotUUIDString() throws Exception {
+        // given
+        DefaultGrpcBookService testable = testableBuilder().build();
+        // when
+        StreamRecorder<Book.DeleteBookResponse> recorder = removeBook(testable, "123");
+        // then
+        assertThat(recorder.getError()).isInstanceOf(RequestValidationException.class);
     }
 
     @Test
