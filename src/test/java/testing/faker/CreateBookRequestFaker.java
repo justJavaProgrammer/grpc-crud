@@ -28,4 +28,9 @@ public class CreateBookRequestFaker {
         builder.setName(title);
         return this;
     }
+
+    public CreateBookRequestFaker setIsbn(String isbn) {
+        builder.setIsbn(isbn);
+        return this;
+    }
 }
