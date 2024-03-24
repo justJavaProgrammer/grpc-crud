@@ -6,7 +6,6 @@ import com.odeyalo.grpc.books.exception.BookNotFoundException;
 import com.odeyalo.grpc.books.exception.RequestValidationException;
 import com.odeyalo.grpc.books.model.Book;
 import com.odeyalo.grpc.books.service.BookService;
-import com.odeyalo.grpc.books.service.CreateBookInfo;
 import com.odeyalo.grpc.books.service.UpdateBookInfo;
 import com.odeyalo.grpc.books.support.converter.BookDtoConverter;
 import com.odeyalo.grpc.books.support.converter.CreateBookInfoConverter;
@@ -56,10 +55,9 @@ public final class DefaultGrpcBookService extends BookServiceGrpc.BookServiceImp
     @Override
     public void addBook(CreateBookRequest request, StreamObserver<BookDto> responseObserver) {
 
-        CreateBookInfo createBookInfo = createBookInfoConverter.toCreateBookInfo(request);
-
-        bookService.save(createBookInfo)
-                .map(bookDtoConverter::toBookDto)
+        validate(request)
+                .map(createBookInfoConverter::toCreateBookInfo)
+                .flatMap(it -> bookService.save(it).map(bookDtoConverter::toBookDto))
                 .subscribeOn(Schedulers.boundedElastic())
                 .subscribe(responseObserver::onNext, responseObserver::onError, responseObserver::onCompleted);
     }

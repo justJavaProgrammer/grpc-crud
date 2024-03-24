@@ -1,6 +1,5 @@
 package com.odeyalo.grpc.books.api.grpc;
 
-import ch.qos.logback.core.testUtil.XTeeOutputStream;
 import io.grpc.internal.testing.StreamRecorder;
 
 import java.util.UUID;
@@ -8,7 +7,7 @@ import java.util.concurrent.TimeUnit;
 
 abstract class AbstractBookClientTest {
 
-    protected Book.BookDto saveBook(DefaultGrpcBookService testable, Book.CreateBookRequest createBookRequest) throws Exception {
+    protected Book.BookDto saveBookAngGetBody(DefaultGrpcBookService testable, Book.CreateBookRequest createBookRequest) throws Exception {
         StreamRecorder<Book.BookDto> recorder = StreamRecorder.create();
 
         testable.addBook(createBookRequest, recorder);
@@ -16,6 +15,16 @@ abstract class AbstractBookClientTest {
         recorder.awaitCompletion(5, TimeUnit.SECONDS);
 
         return recorder.firstValue().get();
+    }
+
+    protected StreamRecorder<Book.BookDto> saveBook(DefaultGrpcBookService testable, Book.CreateBookRequest createBookRequest) throws Exception {
+        StreamRecorder<Book.BookDto> recorder = StreamRecorder.create();
+
+        testable.addBook(createBookRequest, recorder);
+
+        recorder.awaitCompletion(5, TimeUnit.SECONDS);
+
+        return recorder;
     }
 
     protected Book.BookDto fetchBookAndGetResponsePayload(DefaultGrpcBookService testable, String bookId) throws Exception {

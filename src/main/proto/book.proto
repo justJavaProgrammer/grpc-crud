@@ -12,7 +12,7 @@ message BookDto {
 }
 
 message CreateBookRequest {
-  string name = 1 ;
+  string name = 1 [(buf.validate.field).string.min_len = 1];
   string author = 2;
   string isbn = 3;
   int32 quantity = 4;
