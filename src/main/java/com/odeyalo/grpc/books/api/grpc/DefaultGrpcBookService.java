@@ -92,7 +92,7 @@ public final class DefaultGrpcBookService extends BookServiceGrpc.BookServiceImp
                     if ( it.isSuccess() ) {
                         return Mono.just(request);
                     }
-                    return Mono.error(RequestValidationException.defaultException());
+                    return Mono.error(RequestValidationException.withViolations(it.getViolations()));
                 });
     }
 

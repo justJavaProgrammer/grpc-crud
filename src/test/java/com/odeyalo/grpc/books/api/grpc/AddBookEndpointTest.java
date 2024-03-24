@@ -56,6 +56,21 @@ class AddBookEndpointTest extends AbstractBookClientTest {
     }
 
     @Test
+    void shouldReturnErrorIfBookIsbnIsMoreThan15Symbols() throws Exception {
+        // given
+        DefaultGrpcBookService testable = testableBuilder().build();
+
+        Book.CreateBookRequest bookRequest = CreateBookRequestFaker.create()
+                .setIsbn("greater_than_15_symbols_string")
+                .get();
+        // when
+        StreamRecorder<Book.BookDto> recorder = saveBook(testable, bookRequest);
+
+        // then
+        assertThat(recorder.getError()).isInstanceOf(RequestValidationException.class);
+    }
+
+    @Test
     void shouldReturnErrorIfBookAuthorNameIsLessThan5Symbols() throws Exception {
         // given
         DefaultGrpcBookService testable = testableBuilder().build();

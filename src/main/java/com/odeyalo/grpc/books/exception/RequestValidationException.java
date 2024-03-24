@@ -1,9 +1,14 @@
 package com.odeyalo.grpc.books.exception;
 
+import build.buf.validate.Violation;
+import com.odeyalo.grpc.books.api.grpc.Book;
 import io.grpc.Metadata;
 import io.grpc.Status;
 import io.grpc.StatusRuntimeException;
+import io.grpc.protobuf.ProtoUtils;
 import org.jetbrains.annotations.Nullable;
+
+import java.util.List;
 
 public class RequestValidationException extends StatusRuntimeException {
     /**
@@ -20,11 +25,27 @@ public class RequestValidationException extends StatusRuntimeException {
         super(STATUS);
     }
 
+    private RequestValidationException(Status status) {
+        super(status);
+    }
+
     public RequestValidationException(@Nullable Metadata trailers) {
         super(STATUS, trailers);
     }
 
     public static RequestValidationException defaultException() {
         return new RequestValidationException();
+    }
+
+    public static RequestValidationException withViolations(List<Violation> violations) {
+        if ( violations.isEmpty() ) {
+            return defaultException();
+        }
+
+        Violation firstViolation = violations.get(0);
+
+        Status firstViolationStatus = STATUS.withDescription(firstViolation.getFieldPath() + " " + firstViolation.getMessage());
+
+        return new RequestValidationException(firstViolationStatus);
     }
 }
