@@ -22,4 +22,9 @@ public final class UpdateBookPayloadFaker {
     public UpdateBookPayload get() {
         return builder.build();
     }
+
+    public UpdateBookPayloadFaker setTitle(String title) {
+        builder.setName(title);
+        return this;
+    }
 }
