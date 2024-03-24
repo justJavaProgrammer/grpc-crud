@@ -11,6 +11,7 @@ import com.odeyalo.grpc.books.service.UpdateBookInfo;
 import com.odeyalo.grpc.books.support.converter.BookDtoConverter;
 import com.odeyalo.grpc.books.support.converter.CreateBookInfoConverter;
 import com.odeyalo.grpc.books.support.converter.UpdateBookInfoConverter;
+import com.odeyalo.grpc.books.support.validation.ReactiveGrpcRequestValidator;
 import com.odeyalo.grpc.books.support.validation.WrapperReactiveGrpcRequestValidator;
 import io.grpc.stub.StreamObserver;
 import net.devh.boot.grpc.server.service.GrpcService;
@@ -23,19 +24,21 @@ import java.util.UUID;
 @GrpcService()
 public final class DefaultGrpcBookService extends BookServiceGrpc.BookServiceImplBase {
     private final BookService bookService;
+    private final ReactiveGrpcRequestValidator grpcRequestValidator;
     private final BookDtoConverter bookDtoConverter;
     private final CreateBookInfoConverter createBookInfoConverter;
-    private final UpdateBookInfoConverter updateBookInfoConverter;
 
     public DefaultGrpcBookService(BookService bookService,
-                                  BookDtoConverter bookDtoConverter,
+                                  ReactiveGrpcRequestValidator grpcRequestValidator, BookDtoConverter bookDtoConverter,
                                   CreateBookInfoConverter createBookInfoConverter,
                                   UpdateBookInfoConverter updateBookInfoConverter) {
         this.bookService = bookService;
+        this.grpcRequestValidator = grpcRequestValidator;
         this.bookDtoConverter = bookDtoConverter;
         this.createBookInfoConverter = createBookInfoConverter;
         this.updateBookInfoConverter = updateBookInfoConverter;
     }
+    private final UpdateBookInfoConverter updateBookInfoConverter;
 
     @Override
     public void fetchBook(@NotNull final FetchBookRequest request,
@@ -51,10 +54,9 @@ public final class DefaultGrpcBookService extends BookServiceGrpc.BookServiceImp
     }
 
     @NotNull
-    private static Mono<@NotNull FetchBookRequest> validate(@NotNull FetchBookRequest request) {
-        WrapperReactiveGrpcRequestValidator requestValidator = new WrapperReactiveGrpcRequestValidator(new Validator());
+    private Mono<@NotNull FetchBookRequest> validate(@NotNull FetchBookRequest request) {
 
-        return requestValidator.validate(request)
+        return grpcRequestValidator.validate(request)
                 .flatMap(it -> {
                     if ( it.isSuccess() ) {
                         return Mono.just(request);
