@@ -20,15 +20,17 @@ import reactor.core.scheduler.Schedulers;
 
 import java.util.UUID;
 
-@GrpcService()
+@GrpcService
 public final class DefaultGrpcBookService extends BookServiceGrpc.BookServiceImplBase {
     private final BookService bookService;
     private final ReactiveGrpcRequestValidator grpcRequestValidator;
     private final BookDtoConverter bookDtoConverter;
     private final CreateBookInfoConverter createBookInfoConverter;
+    private final UpdateBookInfoConverter updateBookInfoConverter;
 
     public DefaultGrpcBookService(BookService bookService,
-                                  ReactiveGrpcRequestValidator grpcRequestValidator, BookDtoConverter bookDtoConverter,
+                                  ReactiveGrpcRequestValidator grpcRequestValidator,
+                                  BookDtoConverter bookDtoConverter,
                                   CreateBookInfoConverter createBookInfoConverter,
                                   UpdateBookInfoConverter updateBookInfoConverter) {
         this.bookService = bookService;
@@ -37,8 +39,6 @@ public final class DefaultGrpcBookService extends BookServiceGrpc.BookServiceImp
         this.createBookInfoConverter = createBookInfoConverter;
         this.updateBookInfoConverter = updateBookInfoConverter;
     }
-
-    private final UpdateBookInfoConverter updateBookInfoConverter;
 
     @Override
     public void fetchBook(@NotNull final FetchBookRequest request,
