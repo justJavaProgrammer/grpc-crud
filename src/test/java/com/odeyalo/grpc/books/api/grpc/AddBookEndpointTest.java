@@ -1,6 +1,9 @@
 package com.odeyalo.grpc.books.api.grpc;
 
+import com.odeyalo.grpc.books.exception.RequestValidationException;
+import io.grpc.internal.testing.StreamRecorder;
 import org.junit.jupiter.api.Test;
+import testing.faker.CreateBookRequestFaker;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static testing.factory.DefaultGrpcBookServiceTestableBuilder.testableBuilder;
@@ -20,6 +23,96 @@ class AddBookEndpointTest extends AbstractBookClientTest {
         Book.BookDto book = saveBook(testable);
         // then
         assertThat(book.getId()).isNotEmpty();
+    }
+
+    @Test
+    void shouldReturnErrorIfBookNameIsLessThan1Symbol() throws Exception {
+        // given
+        DefaultGrpcBookService testable = testableBuilder().build();
+
+        Book.CreateBookRequest bookRequest = CreateBookRequestFaker.create()
+                .setTitle("")
+                .get();
+        // when
+        StreamRecorder<Book.BookDto> recorder = saveBook(testable, bookRequest);
+
+        // then
+        assertThat(recorder.getError()).isInstanceOf(RequestValidationException.class);
+    }
+
+    @Test
+    void shouldReturnErrorIfBookIsbnIsLessThan10Symbols() throws Exception {
+        // given
+        DefaultGrpcBookService testable = testableBuilder().build();
+
+        Book.CreateBookRequest bookRequest = CreateBookRequestFaker.create()
+                .setIsbn("less")
+                .get();
+        // when
+        StreamRecorder<Book.BookDto> recorder = saveBook(testable, bookRequest);
+
+        // then
+        assertThat(recorder.getError()).isInstanceOf(RequestValidationException.class);
+    }
+
+    @Test
+    void shouldReturnErrorIfBookIsbnIsMoreThan15Symbols() throws Exception {
+        // given
+        DefaultGrpcBookService testable = testableBuilder().build();
+
+        Book.CreateBookRequest bookRequest = CreateBookRequestFaker.create()
+                .setIsbn("greater_than_15_symbols_string")
+                .get();
+        // when
+        StreamRecorder<Book.BookDto> recorder = saveBook(testable, bookRequest);
+
+        // then
+        assertThat(recorder.getError()).isInstanceOf(RequestValidationException.class);
+    }
+
+    @Test
+    void shouldReturnErrorIfBookAuthorNameIsLessThan5Symbols() throws Exception {
+        // given
+        DefaultGrpcBookService testable = testableBuilder().build();
+
+        Book.CreateBookRequest bookRequest = CreateBookRequestFaker.create()
+                .setAuthorName("less")
+                .get();
+        // when
+        StreamRecorder<Book.BookDto> recorder = saveBook(testable, bookRequest);
+
+        // then
+        assertThat(recorder.getError()).isInstanceOf(RequestValidationException.class);
+    }
+
+    @Test
+    void shouldReturnErrorIfBookQuantityIsLessThan0() throws Exception {
+        // given
+        DefaultGrpcBookService testable = testableBuilder().build();
+
+        Book.CreateBookRequest bookRequest = CreateBookRequestFaker.create()
+                .setQuantity(-1)
+                .get();
+        // when
+        StreamRecorder<Book.BookDto> recorder = saveBook(testable, bookRequest);
+
+        // then
+        assertThat(recorder.getError()).isInstanceOf(RequestValidationException.class);
+    }
+
+    @Test
+    void shouldCompleteWithoutErrorIfZeroQuantityIsUsed() throws Exception {
+        // given
+        DefaultGrpcBookService testable = testableBuilder().build();
+
+        Book.CreateBookRequest bookRequest = CreateBookRequestFaker.create()
+                .setQuantity(0)
+                .get();
+        // when
+        StreamRecorder<Book.BookDto> recorder = saveBook(testable, bookRequest);
+
+        // then
+        assertThat(recorder.getError()).isNull();
     }
 
     @Test
@@ -71,6 +164,6 @@ class AddBookEndpointTest extends AbstractBookClientTest {
     }
 
     private Book.BookDto saveBook(DefaultGrpcBookService testable) throws Exception {
-        return saveBook(testable, CREATE_NOVEL_REQUEST);
+        return saveBookAngGetBody(testable, CREATE_NOVEL_REQUEST);
     }
 }

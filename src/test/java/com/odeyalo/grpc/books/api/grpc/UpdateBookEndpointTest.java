@@ -2,11 +2,15 @@ package com.odeyalo.grpc.books.api.grpc;
 
 import com.odeyalo.grpc.books.api.grpc.Book.BookDto;
 import com.odeyalo.grpc.books.api.grpc.Book.UpdateBookRequest;
+import com.odeyalo.grpc.books.api.grpc.Book.UpdateBookRequest.UpdateBookPayload;
 import com.odeyalo.grpc.books.entity.BookEntity;
 import com.odeyalo.grpc.books.exception.BookNotFoundException;
+import com.odeyalo.grpc.books.exception.RequestValidationException;
 import io.grpc.internal.testing.StreamRecorder;
 import org.junit.jupiter.api.Test;
 import testing.faker.BookEntityFaker;
+import testing.faker.CreateBookRequestFaker;
+import testing.faker.UpdateBookPayloadFaker;
 import testing.faker.UpdateBookRequestFaker;
 
 import java.util.UUID;
@@ -29,6 +33,110 @@ class UpdateBookEndpointTest extends AbstractBookClientTest {
         StreamRecorder<BookDto> recorder = updateBookRequest(testable, updateBookRequest);
         // then
         assertThat(recorder.getError()).isNull();
+    }
+
+    @Test
+    void shouldReturnValidationErrorIfIdIsNotUUID() throws Exception {
+        // given
+        DefaultGrpcBookService testable = testableBuilder().build();
+        UpdateBookRequest updateBookRequest = UpdateBookRequest.newBuilder().setBookId("123").build();
+        // when
+        StreamRecorder<BookDto> recorder = updateBookRequest(testable, updateBookRequest);
+        // then
+        assertThat(recorder.getError()).isInstanceOf(RequestValidationException.class);
+    }
+
+    @Test
+    void shouldReturnErrorIfBookNameIsLessThan1Symbol() throws Exception {
+        // given
+        DefaultGrpcBookService testable = testableBuilder().build();
+        UpdateBookPayload payload = UpdateBookPayloadFaker.create().setTitle("").get();
+
+        UpdateBookRequest malformedUpdateBookRequest = UpdateBookRequest.newBuilder()
+                .setBookId(EXISTING_BOOK.getId().toString())
+                .setNewBook(payload)
+                .build();
+        // when
+        StreamRecorder<Book.BookDto> recorder = updateBookRequest(testable, malformedUpdateBookRequest);
+
+        // then
+        assertThat(recorder.getError()).isInstanceOf(RequestValidationException.class);
+    }
+
+    @Test
+    void shouldReturnErrorIfBookIsbnIsLessThan10Symbols() throws Exception {
+        // given
+        DefaultGrpcBookService testable = testableBuilder().build();
+        UpdateBookPayload payload = UpdateBookPayloadFaker.create()
+                .setIsbn("12345")
+                .get();
+
+        UpdateBookRequest malformedUpdateBookRequest = UpdateBookRequest.newBuilder()
+                .setBookId(EXISTING_BOOK.getId().toString())
+                .setNewBook(payload)
+                .build();
+        // when
+        StreamRecorder<Book.BookDto> recorder = updateBookRequest(testable, malformedUpdateBookRequest);
+
+        // then
+        assertThat(recorder.getError()).isInstanceOf(RequestValidationException.class);
+    }
+
+    @Test
+    void shouldReturnErrorIfBookIsbnIsLargerThan15Symbols() throws Exception {
+        // given
+        DefaultGrpcBookService testable = testableBuilder().build();
+        UpdateBookPayload payload = UpdateBookPayloadFaker.create()
+                .setIsbn("very_long_string_that_is_longer_than_15_symbols")
+                .get();
+
+        UpdateBookRequest malformedUpdateBookRequest = UpdateBookRequest.newBuilder()
+                .setBookId(EXISTING_BOOK.getId().toString())
+                .setNewBook(payload)
+                .build();
+        // when
+        StreamRecorder<Book.BookDto> recorder = updateBookRequest(testable, malformedUpdateBookRequest);
+
+        // then
+        assertThat(recorder.getError()).isInstanceOf(RequestValidationException.class);
+    }
+
+    @Test
+    void shouldReturnErrorIfBookAuthorIsLessThan5Symbols() throws Exception {
+        // given
+        DefaultGrpcBookService testable = testableBuilder().build();
+        UpdateBookPayload payload = UpdateBookPayloadFaker.create()
+                .setAuthorName("less")
+                .get();
+
+        UpdateBookRequest malformedUpdateBookRequest = UpdateBookRequest.newBuilder()
+                .setBookId(EXISTING_BOOK.getId().toString())
+                .setNewBook(payload)
+                .build();
+        // when
+        StreamRecorder<Book.BookDto> recorder = updateBookRequest(testable, malformedUpdateBookRequest);
+
+        // then
+        assertThat(recorder.getError()).isInstanceOf(RequestValidationException.class);
+    }
+
+    @Test
+    void shouldReturnErrorIfQuantityIsLessThanZero() throws Exception {
+        // given
+        DefaultGrpcBookService testable = testableBuilder().build();
+        UpdateBookPayload payload = UpdateBookPayloadFaker.create()
+                .setQuantity(-1)
+                .get();
+
+        UpdateBookRequest malformedUpdateBookRequest = UpdateBookRequest.newBuilder()
+                .setBookId(EXISTING_BOOK.getId().toString())
+                .setNewBook(payload)
+                .build();
+        // when
+        StreamRecorder<Book.BookDto> recorder = updateBookRequest(testable, malformedUpdateBookRequest);
+
+        // then
+        assertThat(recorder.getError()).isInstanceOf(RequestValidationException.class);
     }
 
     @Test

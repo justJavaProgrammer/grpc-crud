@@ -7,7 +7,7 @@ import java.util.concurrent.TimeUnit;
 
 abstract class AbstractBookClientTest {
 
-    protected Book.BookDto saveBook(DefaultGrpcBookService testable, Book.CreateBookRequest createBookRequest) throws Exception {
+    protected Book.BookDto saveBookAngGetBody(DefaultGrpcBookService testable, Book.CreateBookRequest createBookRequest) throws Exception {
         StreamRecorder<Book.BookDto> recorder = StreamRecorder.create();
 
         testable.addBook(createBookRequest, recorder);
@@ -15,6 +15,16 @@ abstract class AbstractBookClientTest {
         recorder.awaitCompletion(5, TimeUnit.SECONDS);
 
         return recorder.firstValue().get();
+    }
+
+    protected StreamRecorder<Book.BookDto> saveBook(DefaultGrpcBookService testable, Book.CreateBookRequest createBookRequest) throws Exception {
+        StreamRecorder<Book.BookDto> recorder = StreamRecorder.create();
+
+        testable.addBook(createBookRequest, recorder);
+
+        recorder.awaitCompletion(5, TimeUnit.SECONDS);
+
+        return recorder;
     }
 
     protected Book.BookDto fetchBookAndGetResponsePayload(DefaultGrpcBookService testable, String bookId) throws Exception {
@@ -51,8 +61,12 @@ abstract class AbstractBookClientTest {
     }
 
     protected StreamRecorder<Book.DeleteBookResponse> removeBook(DefaultGrpcBookService testable, UUID id) throws Exception {
+        return removeBook(testable, id.toString());
+    }
+
+    protected StreamRecorder<Book.DeleteBookResponse> removeBook(DefaultGrpcBookService testable, String id) throws Exception {
         Book.DeleteBookRequest deleteBookRequest = Book.DeleteBookRequest.newBuilder()
-                .setBookId(id.toString())
+                .setBookId(id)
                 .build();
 
         final StreamRecorder<Book.DeleteBookResponse> streamRecorder = StreamRecorder.create();
