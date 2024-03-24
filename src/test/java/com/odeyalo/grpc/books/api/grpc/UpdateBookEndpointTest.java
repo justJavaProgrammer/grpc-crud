@@ -4,6 +4,7 @@ import com.odeyalo.grpc.books.api.grpc.Book.BookDto;
 import com.odeyalo.grpc.books.api.grpc.Book.UpdateBookRequest;
 import com.odeyalo.grpc.books.entity.BookEntity;
 import com.odeyalo.grpc.books.exception.BookNotFoundException;
+import com.odeyalo.grpc.books.exception.RequestValidationException;
 import io.grpc.internal.testing.StreamRecorder;
 import org.junit.jupiter.api.Test;
 import testing.faker.BookEntityFaker;
@@ -29,6 +30,17 @@ class UpdateBookEndpointTest extends AbstractBookClientTest {
         StreamRecorder<BookDto> recorder = updateBookRequest(testable, updateBookRequest);
         // then
         assertThat(recorder.getError()).isNull();
+    }
+
+    @Test
+    void shouldReturnValidationErrorIfIdIsNotUUID() throws Exception {
+        // given
+        DefaultGrpcBookService testable = testableBuilder().build();
+        UpdateBookRequest updateBookRequest = UpdateBookRequest.newBuilder().setBookId("123").build();
+        // when
+        StreamRecorder<BookDto> recorder = updateBookRequest(testable, updateBookRequest);
+        // then
+        assertThat(recorder.getError()).isInstanceOf(RequestValidationException.class);
     }
 
     @Test

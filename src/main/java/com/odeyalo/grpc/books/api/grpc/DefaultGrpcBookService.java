@@ -1,6 +1,6 @@
 package com.odeyalo.grpc.books.api.grpc;
 
-import build.buf.protovalidate.Validator;
+import com.google.protobuf.Message;
 import com.odeyalo.grpc.books.api.grpc.Book.*;
 import com.odeyalo.grpc.books.exception.BookNotFoundException;
 import com.odeyalo.grpc.books.exception.RequestValidationException;
@@ -12,7 +12,6 @@ import com.odeyalo.grpc.books.support.converter.BookDtoConverter;
 import com.odeyalo.grpc.books.support.converter.CreateBookInfoConverter;
 import com.odeyalo.grpc.books.support.converter.UpdateBookInfoConverter;
 import com.odeyalo.grpc.books.support.validation.ReactiveGrpcRequestValidator;
-import com.odeyalo.grpc.books.support.validation.WrapperReactiveGrpcRequestValidator;
 import io.grpc.stub.StreamObserver;
 import net.devh.boot.grpc.server.service.GrpcService;
 import org.jetbrains.annotations.NotNull;
@@ -38,6 +37,7 @@ public final class DefaultGrpcBookService extends BookServiceGrpc.BookServiceImp
         this.createBookInfoConverter = createBookInfoConverter;
         this.updateBookInfoConverter = updateBookInfoConverter;
     }
+
     private final UpdateBookInfoConverter updateBookInfoConverter;
 
     @Override
@@ -53,18 +53,6 @@ public final class DefaultGrpcBookService extends BookServiceGrpc.BookServiceImp
 
     }
 
-    @NotNull
-    private Mono<@NotNull FetchBookRequest> validate(@NotNull FetchBookRequest request) {
-
-        return grpcRequestValidator.validate(request)
-                .flatMap(it -> {
-                    if ( it.isSuccess() ) {
-                        return Mono.just(request);
-                    }
-                    return Mono.error(RequestValidationException.defaultException());
-                });
-    }
-
     @Override
     public void addBook(CreateBookRequest request, StreamObserver<BookDto> responseObserver) {
 
@@ -78,12 +66,13 @@ public final class DefaultGrpcBookService extends BookServiceGrpc.BookServiceImp
 
     @Override
     public void updateBook(UpdateBookRequest request, StreamObserver<BookDto> responseObserver) {
-        UpdateBookInfo updateBookInfo = toUpdateBookInfo(request);
-
-        bookService.updateBook(UUID.fromString(request.getBookId()), updateBookInfo)
-                .map(bookDtoConverter::toBookDto)
+        validate(request)
+                .map(this::toUpdateBookInfo)
+                .flatMap(it -> bookService
+                        .updateBook(UUID.fromString(request.getBookId()), it)
+                        .onErrorMap(error -> BookNotFoundException.defaultException())
+                        .map(bookDtoConverter::toBookDto))
                 .subscribeOn(Schedulers.boundedElastic())
-                .onErrorMap(it -> BookNotFoundException.defaultException())
                 .subscribe(responseObserver::onNext, responseObserver::onError, responseObserver::onCompleted);
     }
 
@@ -100,6 +89,19 @@ public final class DefaultGrpcBookService extends BookServiceGrpc.BookServiceImp
                 .subscribe(responseObserver::onNext, responseObserver::onError, responseObserver::onCompleted);
     }
 
+    @NotNull
+    private <T extends Message> Mono<@NotNull T> validate(@NotNull T request) {
+
+        return grpcRequestValidator.validate(request)
+                .flatMap(it -> {
+                    if ( it.isSuccess() ) {
+                        return Mono.just(request);
+                    }
+                    return Mono.error(RequestValidationException.defaultException());
+                });
+    }
+
+    @NotNull
     private UpdateBookInfo toUpdateBookInfo(UpdateBookRequest request) {
         return updateBookInfoConverter.toUpdateBookInfo(request.getNewBook());
     }
