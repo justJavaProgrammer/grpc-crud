@@ -37,4 +37,9 @@ public final class UpdateBookPayloadFaker {
         builder.setAuthor(authorName);
         return this;
     }
+
+    public UpdateBookPayloadFaker setQuantity(int quantity) {
+        builder.setQuantity(quantity);
+        return this;
+    }
 }
