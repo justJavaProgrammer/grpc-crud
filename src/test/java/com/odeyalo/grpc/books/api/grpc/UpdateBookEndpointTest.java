@@ -64,6 +64,25 @@ class UpdateBookEndpointTest extends AbstractBookClientTest {
     }
 
     @Test
+    void shouldReturnErrorIfBookIsbnIsLessThan10Symbols() throws Exception {
+        // given
+        DefaultGrpcBookService testable = testableBuilder().build();
+        UpdateBookPayload payload = UpdateBookPayloadFaker.create()
+                .setIsbn("12345")
+                .get();
+
+        UpdateBookRequest malformedUpdateBookRequest = UpdateBookRequest.newBuilder()
+                .setBookId(EXISTING_BOOK.getId().toString())
+                .setNewBook(payload)
+                .build();
+        // when
+        StreamRecorder<Book.BookDto> recorder = updateBookRequest(testable, malformedUpdateBookRequest);
+
+        // then
+        assertThat(recorder.getError()).isInstanceOf(RequestValidationException.class);
+    }
+
+    @Test
     void shouldReturnNameOfTheBookThatWasProvidedInPayload() throws Exception {
         // given
         DefaultGrpcBookService testable = testableBuilder()

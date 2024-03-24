@@ -27,4 +27,9 @@ public final class UpdateBookPayloadFaker {
         builder.setName(title);
         return this;
     }
+
+    public UpdateBookPayloadFaker setIsbn(String isbn) {
+        builder.setIsbn(isbn);
+        return this;
+    }
 }

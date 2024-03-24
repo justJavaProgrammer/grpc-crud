@@ -25,7 +25,7 @@ message UpdateBookRequest {
   message UpdateBookPayload {
     string name = 1 [(buf.validate.field).string.min_len = 1];
     string author = 2;
-    string isbn = 3;
+    string isbn = 3 [(buf.validate.field).string.min_len = 10];
     int32 quantity = 4;
   }
 }
