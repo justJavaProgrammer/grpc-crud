@@ -32,4 +32,9 @@ public final class UpdateBookPayloadFaker {
         builder.setIsbn(isbn);
         return this;
     }
+
+    public UpdateBookPayloadFaker setAuthorName(String authorName) {
+        builder.setAuthor(authorName);
+        return this;
+    }
 }
