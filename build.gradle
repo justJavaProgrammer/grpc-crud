@@ -38,6 +38,7 @@ dependencies {
     implementation 'org.springframework.boot:spring-boot-starter-webflux'
     implementation 'org.jetbrains:annotations:23.0.0'
     implementation 'org.mapstruct:mapstruct:1.5.5.Final'
+    implementation  'build.buf:protovalidate:0.1.6'
     // Database
     implementation 'org.flywaydb:flyway-core'
     implementation 'org.springframework.boot:spring-boot-starter-data-r2dbc'
@@ -64,11 +65,13 @@ protobuf {
     protoc {
         artifact = "com.google.protobuf:protoc:3.24.0"
     }
+
     plugins {
         grpc {
             artifact = 'io.grpc:protoc-gen-grpc-java:1.60.1'
         }
     }
+
     generateProtoTasks {
         all()*.plugins {
             grpc {}

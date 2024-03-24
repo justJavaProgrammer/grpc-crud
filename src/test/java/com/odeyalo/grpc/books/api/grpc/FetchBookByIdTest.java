@@ -2,11 +2,13 @@ package com.odeyalo.grpc.books.api.grpc;
 
 import com.odeyalo.grpc.books.entity.BookEntity;
 import com.odeyalo.grpc.books.exception.BookNotFoundException;
+import com.odeyalo.grpc.books.exception.RequestValidationException;
 import io.grpc.internal.testing.StreamRecorder;
 import org.junit.jupiter.api.Test;
 import testing.faker.BookEntityFaker;
 
 import java.util.UUID;
+import java.util.concurrent.TimeUnit;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static testing.factory.DefaultGrpcBookServiceTestableBuilder.testableBuilder;
@@ -25,6 +27,18 @@ class FetchBookByIdTest extends AbstractBookClientTest {
         Book.BookDto found = fetchBookAndGetResponsePayload(testable, bookId);
 
         assertThat(found.getId()).isEqualTo(bookId);
+    }
+
+    @Test
+    void shouldReturnErrorIfNonUuidIsUsedAsId() throws Exception {
+        DefaultGrpcBookService testable = testableBuilder().build();
+
+        StreamRecorder<Book.BookDto> recorder = fetchBook(testable, "123");
+
+
+        recorder.awaitCompletion(5, TimeUnit.SECONDS);
+
+        assertThat(recorder.getError()).isInstanceOf(RequestValidationException.class);
     }
 
     @Test

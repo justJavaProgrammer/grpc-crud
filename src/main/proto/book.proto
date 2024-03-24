@@ -1,6 +1,8 @@
 syntax = 'proto3';
 option java_package = 'com.odeyalo.grpc.books.api.grpc';
 
+import "buf/validate/validate.proto";
+
 message BookDto {
   string id = 1;
   string name = 2;
@@ -10,14 +12,14 @@ message BookDto {
 }
 
 message CreateBookRequest {
-  string name = 1;
+  string name = 1 ;
   string author = 2;
   string isbn = 3;
   int32 quantity = 4;
 }
 
 message UpdateBookRequest {
-  string bookId = 1;
+  string bookId = 1 [(buf.validate.field).string.uuid = true];
   UpdateBookPayload newBook = 2;
 
   message UpdateBookPayload {
@@ -29,11 +31,11 @@ message UpdateBookRequest {
 }
 
 message FetchBookRequest {
-  string bookId = 1;
+  string bookId = 1 [(buf.validate.field).string.uuid = true];
 }
 
 message DeleteBookRequest {
-  string bookId = 1;
+  string bookId = 1 [(buf.validate.field).string.uuid = true];
 }
 
 message DeleteBookResponse {

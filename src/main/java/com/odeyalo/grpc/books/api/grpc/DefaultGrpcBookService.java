@@ -1,7 +1,9 @@
 package com.odeyalo.grpc.books.api.grpc;
 
+import build.buf.protovalidate.Validator;
 import com.odeyalo.grpc.books.api.grpc.Book.*;
 import com.odeyalo.grpc.books.exception.BookNotFoundException;
+import com.odeyalo.grpc.books.exception.RequestValidationException;
 import com.odeyalo.grpc.books.model.Book;
 import com.odeyalo.grpc.books.service.BookService;
 import com.odeyalo.grpc.books.service.CreateBookInfo;
@@ -9,6 +11,7 @@ import com.odeyalo.grpc.books.service.UpdateBookInfo;
 import com.odeyalo.grpc.books.support.converter.BookDtoConverter;
 import com.odeyalo.grpc.books.support.converter.CreateBookInfoConverter;
 import com.odeyalo.grpc.books.support.converter.UpdateBookInfoConverter;
+import com.odeyalo.grpc.books.support.validation.WrapperReactiveGrpcRequestValidator;
 import io.grpc.stub.StreamObserver;
 import net.devh.boot.grpc.server.service.GrpcService;
 import org.jetbrains.annotations.NotNull;
@@ -17,7 +20,7 @@ import reactor.core.scheduler.Schedulers;
 
 import java.util.UUID;
 
-@GrpcService
+@GrpcService()
 public final class DefaultGrpcBookService extends BookServiceGrpc.BookServiceImplBase {
     private final BookService bookService;
     private final BookDtoConverter bookDtoConverter;
@@ -38,12 +41,26 @@ public final class DefaultGrpcBookService extends BookServiceGrpc.BookServiceImp
     public void fetchBook(@NotNull final FetchBookRequest request,
                           @NotNull final StreamObserver<BookDto> responseObserver) {
 
-        doFetchBook(request)
-                .map(bookDtoConverter::toBookDto)
-                .switchIfEmpty(Mono.defer(() -> Mono.error(BookNotFoundException.defaultException())))
+        validate(request)
+                .flatMap(it -> doFetchBook(request)
+                        .map(bookDtoConverter::toBookDto)
+                        .switchIfEmpty(Mono.defer(() -> Mono.error(BookNotFoundException.defaultException()))))
                 .subscribeOn(Schedulers.boundedElastic())
                 .subscribe(responseObserver::onNext, responseObserver::onError, responseObserver::onCompleted);
 
+    }
+
+    @NotNull
+    private static Mono<@NotNull FetchBookRequest> validate(@NotNull FetchBookRequest request) {
+        WrapperReactiveGrpcRequestValidator requestValidator = new WrapperReactiveGrpcRequestValidator(new Validator());
+
+        return requestValidator.validate(request)
+                .flatMap(it -> {
+                    if ( it.isSuccess() ) {
+                        return Mono.just(request);
+                    }
+                    return Mono.error(RequestValidationException.defaultException());
+                });
     }
 
     @Override
