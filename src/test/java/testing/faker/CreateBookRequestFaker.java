@@ -33,4 +33,9 @@ public class CreateBookRequestFaker {
         builder.setIsbn(isbn);
         return this;
     }
+
+    public CreateBookRequestFaker setAuthorName(String authorName) {
+        builder.setAuthor(authorName);
+        return this;
+    }
 }
