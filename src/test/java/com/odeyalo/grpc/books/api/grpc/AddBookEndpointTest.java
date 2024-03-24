@@ -71,6 +71,36 @@ class AddBookEndpointTest extends AbstractBookClientTest {
     }
 
     @Test
+    void shouldReturnErrorIfBookQuantityIsLessThan0() throws Exception {
+        // given
+        DefaultGrpcBookService testable = testableBuilder().build();
+
+        Book.CreateBookRequest bookRequest = CreateBookRequestFaker.create()
+                .setQuantity(-1)
+                .get();
+        // when
+        StreamRecorder<Book.BookDto> recorder = saveBook(testable, bookRequest);
+
+        // then
+        assertThat(recorder.getError()).isInstanceOf(RequestValidationException.class);
+    }
+
+    @Test
+    void shouldCompleteWithoutErrorIfZeroQuantityIsUsed() throws Exception {
+        // given
+        DefaultGrpcBookService testable = testableBuilder().build();
+
+        Book.CreateBookRequest bookRequest = CreateBookRequestFaker.create()
+                .setQuantity(0)
+                .get();
+        // when
+        StreamRecorder<Book.BookDto> recorder = saveBook(testable, bookRequest);
+
+        // then
+        assertThat(recorder.getError()).isNull();
+    }
+
+    @Test
     void shouldReturnSavedBookWithTitleAsProvided() throws Exception {
         DefaultGrpcBookService testable = testableBuilder().build();
         // when

@@ -38,4 +38,9 @@ public class CreateBookRequestFaker {
         builder.setAuthor(authorName);
         return this;
     }
+
+    public CreateBookRequestFaker setQuantity(int quantity) {
+        builder.setQuantity(quantity);
+        return this;
+    }
 }
