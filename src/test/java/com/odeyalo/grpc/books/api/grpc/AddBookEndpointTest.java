@@ -170,4 +170,21 @@ class AddBookEndpointTest extends AbstractBookClientTest {
                 .expectNext(CREATE_NOVEL_REQUEST.getQuantity())
                 .verifyComplete();
     }
+
+    @Test
+    void bookShouldBeFoundAfterSave() {
+        DefaultReactiveBookService testable = testableBuilder().build();
+        // when
+        Book.BookDto savedBook = testable.addBook(CREATE_NOVEL_REQUEST).block();
+
+        //noinspection DataFlowIssue
+        Book.FetchBookRequest fetchExistingBooKRequest = Book.FetchBookRequest.newBuilder()
+                .setBookId(savedBook.getId())
+                .build();
+        // then
+        testable.fetchBook(fetchExistingBooKRequest)
+                .as(StepVerifier::create)
+                .expectNext(savedBook)
+                .verifyComplete();
+    }
 }
