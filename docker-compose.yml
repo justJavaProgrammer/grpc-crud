@@ -1,0 +1,28 @@
+version: '3.8'
+
+services:
+
+  grpc-books:
+    ports:
+      - "6565:9090"
+    container_name: "grpc-books"
+    image: "grpc-books-image"
+    env_file:
+      - local.env
+    depends_on:
+      postgres-db:
+        condition: service_healthy
+
+
+  postgres-db:
+    image: 'postgres:13.1-alpine'
+    container_name: db
+    ports:
+      - "5432:5432"
+    env_file:
+      local.env
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U postgres" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
