@@ -43,7 +43,21 @@ public final class DefaultReactiveBookService extends ReactorBookServiceGrpc.Boo
         return validate(request)
                 .map(createBookInfoConverter::toCreateBookInfo)
                 .flatMap(it -> bookService.save(it).map(bookDtoConverter::toBookDto));
-     }
+    }
+
+    @Override
+    public Mono<Book.DeleteBookResponse> removeBook(Book.DeleteBookRequest request) {
+        return validate(request)
+                .flatMap(it -> bookService.removeById(UUID.fromString(request.getBookId())))
+                .thenReturn(successDeleteResponse());
+    }
+
+    @NotNull
+    private static Book.DeleteBookResponse successDeleteResponse() {
+        return Book.DeleteBookResponse.newBuilder()
+                .setStatus(Book.DeletionStatus.SUCCESS)
+                .build();
+    }
 
     @NotNull
     private <T extends Message> Mono<@NotNull T> validate(@NotNull T request) {
