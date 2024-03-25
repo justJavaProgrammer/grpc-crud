@@ -12,14 +12,14 @@ import com.odeyalo.grpc.books.support.converter.CreateBookInfoConverter;
 import com.odeyalo.grpc.books.support.converter.UpdateBookInfoConverter;
 import com.odeyalo.grpc.books.support.validation.ReactiveGrpcRequestValidator;
 import io.grpc.stub.StreamObserver;
-import net.devh.boot.grpc.server.service.GrpcService;
 import org.jetbrains.annotations.NotNull;
+import org.lognet.springboot.grpc.GRpcService;
 import reactor.core.publisher.Mono;
 import reactor.core.scheduler.Schedulers;
 
 import java.util.UUID;
 
-@GrpcService
+@GRpcService
 public final class DefaultGrpcBookService extends BookServiceGrpc.BookServiceImplBase {
     private final BookService bookService;
     private final ReactiveGrpcRequestValidator grpcRequestValidator;
