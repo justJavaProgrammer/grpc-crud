@@ -70,6 +70,23 @@ class AddBookEndpointTest extends AbstractBookClientTest {
         // when
         testable.addBook(bookRequest)
                 .as(StepVerifier::create)
+                // then
+                .expectError(RequestValidationException.class)
+                .verify();
+    }
+
+    @Test
+    void shouldReturnErrorIfBookAuthorNameIsLessThan5Symbols() {
+        // given
+        DefaultReactiveBookService testable = testableBuilder().build();
+
+        Book.CreateBookRequest bookRequest = CreateBookRequestFaker.create()
+                .setAuthorName("less")
+                .get();
+        // when
+        testable.addBook(bookRequest)
+                .as(StepVerifier::create)
+                // then
                 .expectError(RequestValidationException.class)
                 .verify();
     }
