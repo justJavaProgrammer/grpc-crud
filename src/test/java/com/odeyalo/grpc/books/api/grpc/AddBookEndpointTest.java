@@ -42,4 +42,20 @@ class AddBookEndpointTest extends AbstractBookClientTest {
                 .expectError(RequestValidationException.class)
                 .verify();
     }
+
+    @Test
+    void shouldReturnErrorIfBookIsbnIsLessThan10Symbols() {
+        // given
+        DefaultReactiveBookService testable = testableBuilder().build();
+
+        Book.CreateBookRequest bookRequest = CreateBookRequestFaker.create()
+                .setIsbn("less")
+                .get();
+        // when
+        testable.addBook(bookRequest)
+                .as(StepVerifier::create)
+                // then
+                .expectError(RequestValidationException.class)
+                .verify();
+    }
 }
