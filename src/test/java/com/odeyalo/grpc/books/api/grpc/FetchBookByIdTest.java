@@ -54,4 +54,17 @@ class FetchBookByIdTest extends AbstractBookClientTest {
                 .expectError(BookNotFoundException.class)
                 .verify();
     }
+
+    @Test
+    void shouldFetchBookByItsIdAndReturnCorrectName() {
+        DefaultReactiveBookService testable = testableBuilder()
+                .withBooks(EXISTING_BOOK)
+                .build();
+
+        testable.fetchBook(FETCH_EXISTING_BOOK_REQUEST)
+                .map(Book.BookDto::getName)
+                .as(StepVerifier::create)
+                .expectNext(EXISTING_BOOK.getName())
+                .verifyComplete();
+    }
 }
