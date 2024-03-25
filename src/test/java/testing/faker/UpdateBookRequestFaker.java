@@ -18,6 +18,10 @@ public final class UpdateBookRequestFaker {
         return new UpdateBookRequestFaker(id.toString());
     }
 
+    public static UpdateBookRequestFaker withId(String id) {
+        return new UpdateBookRequestFaker(id);
+    }
+
     public UpdateBookRequest get() {
         return builder.build();
     }

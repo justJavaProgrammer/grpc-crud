@@ -1,108 +1,118 @@
 package com.odeyalo.grpc.books.api.grpc;
 
+import com.odeyalo.grpc.books.api.grpc.Book.FetchBookRequest;
 import com.odeyalo.grpc.books.entity.BookEntity;
 import com.odeyalo.grpc.books.exception.BookNotFoundException;
 import com.odeyalo.grpc.books.exception.RequestValidationException;
-import io.grpc.internal.testing.StreamRecorder;
 import org.junit.jupiter.api.Test;
+import reactor.test.StepVerifier;
 import testing.faker.BookEntityFaker;
 
 import java.util.UUID;
-import java.util.concurrent.TimeUnit;
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static testing.factory.DefaultGrpcBookServiceTestableBuilder.testableBuilder;
+import static testing.factory.DefaultGrpcReactiveBookServiceTestableBuilder.testableBuilder;
 
-class FetchBookByIdTest extends AbstractBookClientTest {
-    public static final BookEntity EXISTING_BOOK = BookEntityFaker.create().get();
+class FetchBookByIdTest {
+    private static final String EXISTING_BOOK_ID = UUID.randomUUID().toString();
+
+    private static final BookEntity EXISTING_BOOK = BookEntityFaker.create()
+            .setIdString(EXISTING_BOOK_ID)
+            .get();
+    private static final FetchBookRequest FETCH_EXISTING_BOOK_REQUEST = FetchBookRequest.newBuilder()
+            .setBookId(EXISTING_BOOK_ID)
+            .build();
+    private static final FetchBookRequest FETCH_NOT_EXISTING_BOOK_REQUEST = FetchBookRequest.newBuilder()
+            .setBookId(UUID.randomUUID().toString())
+            .build();
+    private static final FetchBookRequest MALFORMED_FETCH_BOOK_REQUEST = FetchBookRequest.newBuilder()
+            .setBookId("123")
+            .build();
 
     @Test
-    void shouldFetchBookByItsId() throws Exception {
-        final DefaultGrpcBookService testable = testableBuilder()
+    void shouldFetchBookByItsId() {
+        final DefaultReactiveBookService testable = testableBuilder()
                 .withBooks(EXISTING_BOOK)
                 .build();
 
-        String bookId = EXISTING_BOOK.getId().toString();
-
-        Book.BookDto found = fetchBookAndGetResponsePayload(testable, bookId);
-
-        assertThat(found.getId()).isEqualTo(bookId);
+        testable.fetchBook(FETCH_EXISTING_BOOK_REQUEST)
+                .map(Book.BookDto::getId)
+                .as(StepVerifier::create)
+                .expectNext(EXISTING_BOOK_ID)
+                .verifyComplete();
     }
 
     @Test
-    void shouldReturnErrorIfNonUuidIsUsedAsId() throws Exception {
-        DefaultGrpcBookService testable = testableBuilder().build();
+    void shouldReturnErrorIfNonUuidIsUsedAsId() {
+        DefaultReactiveBookService testable = testableBuilder().build();
 
-        StreamRecorder<Book.BookDto> recorder = fetchBook(testable, "123");
-
-
-        recorder.awaitCompletion(5, TimeUnit.SECONDS);
-
-        assertThat(recorder.getError()).isInstanceOf(RequestValidationException.class);
+        testable.fetchBook(MALFORMED_FETCH_BOOK_REQUEST)
+                .map(Book.BookDto::getId)
+                .as(StepVerifier::create)
+                .expectError(RequestValidationException.class)
+                .verify();
     }
 
     @Test
-    void shouldFetchBookByItsIdAndReturnCorrectName() throws Exception {
-        final DefaultGrpcBookService testable = testableBuilder()
+    void shouldReturnBookNotFoundErrorIfBookDoesNotExist() {
+        DefaultReactiveBookService testable = testableBuilder().build();
+
+        testable.fetchBook(FETCH_NOT_EXISTING_BOOK_REQUEST)
+                .map(Book.BookDto::getId)
+                .as(StepVerifier::create)
+                .expectError(BookNotFoundException.class)
+                .verify();
+    }
+
+    @Test
+    void shouldFetchBookByItsIdAndReturnCorrectName() {
+        DefaultReactiveBookService testable = testableBuilder()
                 .withBooks(EXISTING_BOOK)
                 .build();
 
-        String bookId = EXISTING_BOOK.getId().toString();
-
-        Book.BookDto found = fetchBookAndGetResponsePayload(testable, bookId);
-
-        assertThat(found.getName()).isEqualTo(EXISTING_BOOK.getName());
+        testable.fetchBook(FETCH_EXISTING_BOOK_REQUEST)
+                .map(Book.BookDto::getName)
+                .as(StepVerifier::create)
+                .expectNext(EXISTING_BOOK.getName())
+                .verifyComplete();
     }
 
     @Test
-    void shouldFetchBookByItsIdAndReturnCorrectIsbn() throws Exception {
-        final DefaultGrpcBookService testable = testableBuilder()
+    void shouldFetchBookByItsIdAndReturnCorrectIsbn() {
+        DefaultReactiveBookService testable = testableBuilder()
                 .withBooks(EXISTING_BOOK)
                 .build();
 
-        String bookId = EXISTING_BOOK.getId().toString();
-
-        Book.BookDto found = fetchBookAndGetResponsePayload(testable, bookId);
-
-        assertThat(found.getIsbn()).isEqualTo(EXISTING_BOOK.getIsbn());
+        testable.fetchBook(FETCH_EXISTING_BOOK_REQUEST)
+                .map(Book.BookDto::getIsbn)
+                .as(StepVerifier::create)
+                .expectNext(EXISTING_BOOK.getIsbn())
+                .verifyComplete();
     }
 
+
     @Test
-    void shouldFetchBookByItsIdAndReturnCorrectAuthor() throws Exception {
-        final DefaultGrpcBookService testable = testableBuilder()
+    void shouldFetchBookByItsIdAndReturnCorrectAuthor() {
+        DefaultReactiveBookService testable = testableBuilder()
                 .withBooks(EXISTING_BOOK)
                 .build();
 
-        String bookId = EXISTING_BOOK.getId().toString();
-
-        Book.BookDto found = fetchBookAndGetResponsePayload(testable, bookId);
-
-        assertThat(found.getAuthor()).isEqualTo(EXISTING_BOOK.getAuthor());
+        testable.fetchBook(FETCH_EXISTING_BOOK_REQUEST)
+                .map(Book.BookDto::getAuthor)
+                .as(StepVerifier::create)
+                .expectNext(EXISTING_BOOK.getAuthor())
+                .verifyComplete();
     }
 
     @Test
-    void shouldFetchBookByItsIdAndReturnCorrectQuantity() throws Exception {
-        final DefaultGrpcBookService testable = testableBuilder()
+    void shouldFetchBookByItsIdAndReturnCorrectQuantity() {
+        DefaultReactiveBookService testable = testableBuilder()
                 .withBooks(EXISTING_BOOK)
                 .build();
 
-        String bookId = EXISTING_BOOK.getId().toString();
-
-        Book.BookDto found = fetchBookAndGetResponsePayload(testable, bookId);
-
-        assertThat(found.getQuantity()).isEqualTo(EXISTING_BOOK.getQuantity());
-    }
-
-    @Test
-    void shouldReturnNothingIfBookByIdDoesNotExist() throws Exception {
-        DefaultGrpcBookService testable = testableBuilder().build();
-
-        StreamRecorder<Book.BookDto> recorder = fetchNotExistingBook(testable);
-
-        assertThat(recorder.getError()).isInstanceOf(BookNotFoundException.class);
-    }
-
-    private StreamRecorder<Book.BookDto> fetchNotExistingBook(DefaultGrpcBookService testable) throws Exception {
-        return super.fetchBook(testable, UUID.randomUUID().toString());
+        testable.fetchBook(FETCH_EXISTING_BOOK_REQUEST)
+                .map(Book.BookDto::getQuantity)
+                .as(StepVerifier::create)
+                .expectNext(EXISTING_BOOK.getQuantity())
+                .verifyComplete();
     }
 }

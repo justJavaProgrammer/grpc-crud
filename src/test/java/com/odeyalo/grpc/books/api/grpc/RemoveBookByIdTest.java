@@ -1,60 +1,85 @@
 package com.odeyalo.grpc.books.api.grpc;
 
+import com.odeyalo.grpc.books.api.grpc.Book.DeletionStatus;
 import com.odeyalo.grpc.books.entity.BookEntity;
+import com.odeyalo.grpc.books.exception.BookNotFoundException;
 import com.odeyalo.grpc.books.exception.RequestValidationException;
-import io.grpc.internal.testing.StreamRecorder;
 import org.junit.jupiter.api.Test;
+import reactor.test.StepVerifier;
 import testing.faker.BookEntityFaker;
 
-import static com.odeyalo.grpc.books.api.grpc.Book.DeletionStatus.SUCCESS;
-import static org.assertj.core.api.Assertions.assertThat;
-import static testing.factory.DefaultGrpcBookServiceTestableBuilder.testableBuilder;
+import java.util.UUID;
 
-class RemoveBookByIdTest extends AbstractBookClientTest {
-    public static final BookEntity EXISTING_BOOK = BookEntityFaker.create().get();
+import static testing.factory.DefaultGrpcReactiveBookServiceTestableBuilder.testableBuilder;
+
+class RemoveBookByIdTest {
+    private static final String EXISTING_BOOK_ID = UUID.randomUUID().toString();
+
+    private static final BookEntity EXISTING_BOOK = BookEntityFaker.create()
+            .setId(UUID.fromString(EXISTING_BOOK_ID))
+            .get();
+    private static final Book.DeleteBookRequest DELETE_EXISTING_BOOK_REQUEST = Book.DeleteBookRequest.newBuilder()
+            .setBookId(EXISTING_BOOK_ID)
+            .build();
+
+    private static final Book.DeleteBookRequest MALFORMED_DELETE_EXISTING_BOOK_REQUEST = Book.DeleteBookRequest.newBuilder()
+            .setBookId("123")
+            .build();
+
+    private static final Book.FetchBookRequest FETCH_EXISTING_BOOK_REQUEST = Book.FetchBookRequest.newBuilder()
+            .setBookId(EXISTING_BOOK_ID)
+            .build();
 
     @Test
-    void shouldCompleteWithoutError() throws Exception {
-        final DefaultGrpcBookService testable = testableBuilder()
+    void shouldCompleteWithoutError() {
+        DefaultReactiveBookService testable = testableBuilder()
                 .withBooks(EXISTING_BOOK)
                 .build();
 
-        final StreamRecorder<Book.DeleteBookResponse> streamRecorder = removeBook(testable, EXISTING_BOOK.getId());
-
-        assertThat(streamRecorder.getError()).isNull();
+        testable.removeBook(DELETE_EXISTING_BOOK_REQUEST)
+                .as(StepVerifier::create)
+                .expectNextCount(1)
+                .verifyComplete();
     }
 
     @Test
-    void shouldReturnErrorIfBookIdIsNotUUIDString() throws Exception {
+    void shouldReturnErrorIfBookIdIsNotUUIDString() {
         // given
-        DefaultGrpcBookService testable = testableBuilder().build();
+        DefaultReactiveBookService testable = testableBuilder().build();
         // when
-        StreamRecorder<Book.DeleteBookResponse> recorder = removeBook(testable, "123");
-        // then
-        assertThat(recorder.getError()).isInstanceOf(RequestValidationException.class);
+        testable.removeBook(MALFORMED_DELETE_EXISTING_BOOK_REQUEST)
+                .as(StepVerifier::create)
+                .expectError(RequestValidationException.class)
+                .verify();
     }
 
     @Test
-    void shouldReturnSuccessCompletionStatusIfBookExist() throws Exception {
-        final DefaultGrpcBookService testable = testableBuilder()
+    void shouldReturnSuccessCompletionStatusIfBookExist() {
+        DefaultReactiveBookService testable = testableBuilder()
                 .withBooks(EXISTING_BOOK)
                 .build();
 
-        final Book.DeleteBookResponse bookDeleteResponse = removeBookAndGetBody(testable, EXISTING_BOOK.getId());
-
-        assertThat(bookDeleteResponse.getStatus()).isEqualTo(SUCCESS);
+        testable.removeBook(DELETE_EXISTING_BOOK_REQUEST)
+                .map(Book.DeleteBookResponse::getStatus)
+                .as(StepVerifier::create)
+                .expectNext(DeletionStatus.SUCCESS)
+                .verifyComplete();
     }
 
     @Test
-    void shouldActuallyDeleteTheBookFromService() throws Exception {
-        final DefaultGrpcBookService testable = testableBuilder()
+    void shouldActuallyDeleteTheBookFromService() {
+        DefaultReactiveBookService testable = testableBuilder()
                 .withBooks(EXISTING_BOOK)
                 .build();
 
-        final Book.DeleteBookResponse ignored = removeBookAndGetBody(testable, EXISTING_BOOK.getId());
+        testable.removeBook(DELETE_EXISTING_BOOK_REQUEST)
+                .as(StepVerifier::create)
+                .expectNextCount(1)
+                .verifyComplete();
 
-        StreamRecorder<Book.BookDto> recorder = fetchBook(testable, EXISTING_BOOK.getId().toString());
-
-        assertThat(recorder.getValues()).isEmpty();
+        testable.fetchBook(FETCH_EXISTING_BOOK_REQUEST)
+                .as(StepVerifier::create)
+                .expectError(BookNotFoundException.class)
+                .verify();
     }
 }

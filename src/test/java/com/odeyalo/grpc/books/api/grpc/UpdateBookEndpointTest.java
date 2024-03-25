@@ -1,251 +1,266 @@
 package com.odeyalo.grpc.books.api.grpc;
 
-import com.odeyalo.grpc.books.api.grpc.Book.BookDto;
 import com.odeyalo.grpc.books.api.grpc.Book.UpdateBookRequest;
 import com.odeyalo.grpc.books.api.grpc.Book.UpdateBookRequest.UpdateBookPayload;
 import com.odeyalo.grpc.books.entity.BookEntity;
 import com.odeyalo.grpc.books.exception.BookNotFoundException;
 import com.odeyalo.grpc.books.exception.RequestValidationException;
-import io.grpc.internal.testing.StreamRecorder;
 import org.junit.jupiter.api.Test;
+import reactor.test.StepVerifier;
 import testing.faker.BookEntityFaker;
-import testing.faker.CreateBookRequestFaker;
 import testing.faker.UpdateBookPayloadFaker;
 import testing.faker.UpdateBookRequestFaker;
 
 import java.util.UUID;
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static testing.factory.DefaultGrpcBookServiceTestableBuilder.testableBuilder;
+import static testing.factory.DefaultGrpcReactiveBookServiceTestableBuilder.testableBuilder;
 
-class UpdateBookEndpointTest extends AbstractBookClientTest {
-    public static final BookEntity EXISTING_BOOK = BookEntityFaker.create().get();
+class UpdateBookEndpointTest {
+    private static final String EXISTING_BOOK_ID = UUID.randomUUID().toString();
+    private static final String NOT_EXISTING_BOOK_ID = UUID.randomUUID().toString();
+    private static final BookEntity EXISTING_BOOK = BookEntityFaker.create().setId(UUID.fromString(EXISTING_BOOK_ID)).get();
 
     @Test
-    void shouldCompleteWithoutAnyError() throws Exception {
+    void shouldCompleteWithoutAnyError() {
         // given
-        DefaultGrpcBookService testable = testableBuilder()
+        DefaultReactiveBookService testable = testableBuilder()
                 .withBooks(EXISTING_BOOK)
                 .build();
-        UpdateBookRequest updateBookRequest = UpdateBookRequestFaker.withId(EXISTING_BOOK.getId()).get();
+
+        UpdateBookRequest updateBookRequest = UpdateBookRequestFaker.withId(EXISTING_BOOK_ID).get();
 
         // when
-        StreamRecorder<BookDto> recorder = updateBookRequest(testable, updateBookRequest);
-        // then
-        assertThat(recorder.getError()).isNull();
+        testable.updateBook(updateBookRequest)
+                .as(StepVerifier::create)
+                // then
+                .expectNextCount(1)
+                .verifyComplete();
     }
 
     @Test
-    void shouldReturnValidationErrorIfIdIsNotUUID() throws Exception {
+    void shouldReturnValidationErrorIfIdIsNotUUID() {
         // given
-        DefaultGrpcBookService testable = testableBuilder().build();
+        DefaultReactiveBookService testable = testableBuilder().build();
         UpdateBookRequest updateBookRequest = UpdateBookRequest.newBuilder().setBookId("123").build();
         // when
-        StreamRecorder<BookDto> recorder = updateBookRequest(testable, updateBookRequest);
-        // then
-        assertThat(recorder.getError()).isInstanceOf(RequestValidationException.class);
+        testable.updateBook(updateBookRequest)
+                .as(StepVerifier::create)
+                // then
+                .expectError(RequestValidationException.class)
+                .verify();
     }
 
     @Test
-    void shouldReturnErrorIfBookNameIsLessThan1Symbol() throws Exception {
+    void shouldReturnErrorIfBookNameIsLessThan1Symbol() {
         // given
-        DefaultGrpcBookService testable = testableBuilder().build();
+        DefaultReactiveBookService testable = testableBuilder().build();
         UpdateBookPayload payload = UpdateBookPayloadFaker.create().setTitle("").get();
 
         UpdateBookRequest malformedUpdateBookRequest = UpdateBookRequest.newBuilder()
-                .setBookId(EXISTING_BOOK.getId().toString())
+                .setBookId(EXISTING_BOOK_ID)
                 .setNewBook(payload)
                 .build();
         // when
-        StreamRecorder<Book.BookDto> recorder = updateBookRequest(testable, malformedUpdateBookRequest);
-
-        // then
-        assertThat(recorder.getError()).isInstanceOf(RequestValidationException.class);
+        testable.updateBook(malformedUpdateBookRequest)
+                .as(StepVerifier::create)
+                .expectError(RequestValidationException.class)
+                .verify();
     }
 
     @Test
-    void shouldReturnErrorIfBookIsbnIsLessThan10Symbols() throws Exception {
+    void shouldReturnErrorIfBookIsbnIsLessThan10Symbols() {
         // given
-        DefaultGrpcBookService testable = testableBuilder().build();
+        DefaultReactiveBookService testable = testableBuilder().build();
         UpdateBookPayload payload = UpdateBookPayloadFaker.create()
                 .setIsbn("12345")
                 .get();
 
         UpdateBookRequest malformedUpdateBookRequest = UpdateBookRequest.newBuilder()
-                .setBookId(EXISTING_BOOK.getId().toString())
+                .setBookId(EXISTING_BOOK_ID)
                 .setNewBook(payload)
                 .build();
         // when
-        StreamRecorder<Book.BookDto> recorder = updateBookRequest(testable, malformedUpdateBookRequest);
-
-        // then
-        assertThat(recorder.getError()).isInstanceOf(RequestValidationException.class);
+        testable.updateBook(malformedUpdateBookRequest)
+                .as(StepVerifier::create)
+                .expectError(RequestValidationException.class)
+                .verify();
     }
 
     @Test
-    void shouldReturnErrorIfBookIsbnIsLargerThan15Symbols() throws Exception {
+    void shouldReturnErrorIfBookIsbnIsLargerThan15Symbols() {
         // given
-        DefaultGrpcBookService testable = testableBuilder().build();
+        DefaultReactiveBookService testable = testableBuilder().build();
         UpdateBookPayload payload = UpdateBookPayloadFaker.create()
                 .setIsbn("very_long_string_that_is_longer_than_15_symbols")
                 .get();
 
         UpdateBookRequest malformedUpdateBookRequest = UpdateBookRequest.newBuilder()
-                .setBookId(EXISTING_BOOK.getId().toString())
+                .setBookId(EXISTING_BOOK_ID)
                 .setNewBook(payload)
                 .build();
         // when
-        StreamRecorder<Book.BookDto> recorder = updateBookRequest(testable, malformedUpdateBookRequest);
-
-        // then
-        assertThat(recorder.getError()).isInstanceOf(RequestValidationException.class);
+        testable.updateBook(malformedUpdateBookRequest)
+                .as(StepVerifier::create)
+                .expectError(RequestValidationException.class)
+                .verify();
     }
 
     @Test
-    void shouldReturnErrorIfBookAuthorIsLessThan5Symbols() throws Exception {
+    void shouldReturnErrorIfBookAuthorIsLessThan5Symbols() {
         // given
-        DefaultGrpcBookService testable = testableBuilder().build();
+        DefaultReactiveBookService testable = testableBuilder().build();
         UpdateBookPayload payload = UpdateBookPayloadFaker.create()
                 .setAuthorName("less")
                 .get();
 
         UpdateBookRequest malformedUpdateBookRequest = UpdateBookRequest.newBuilder()
-                .setBookId(EXISTING_BOOK.getId().toString())
+                .setBookId(EXISTING_BOOK_ID)
                 .setNewBook(payload)
                 .build();
         // when
-        StreamRecorder<Book.BookDto> recorder = updateBookRequest(testable, malformedUpdateBookRequest);
-
-        // then
-        assertThat(recorder.getError()).isInstanceOf(RequestValidationException.class);
+        testable.updateBook(malformedUpdateBookRequest)
+                .as(StepVerifier::create)
+                // then
+                .expectError(RequestValidationException.class)
+                .verify();
     }
 
     @Test
-    void shouldReturnErrorIfQuantityIsLessThanZero() throws Exception {
+    void shouldReturnErrorIfQuantityIsLessThanZero() {
         // given
-        DefaultGrpcBookService testable = testableBuilder().build();
+        DefaultReactiveBookService testable = testableBuilder().build();
         UpdateBookPayload payload = UpdateBookPayloadFaker.create()
                 .setQuantity(-1)
                 .get();
 
         UpdateBookRequest malformedUpdateBookRequest = UpdateBookRequest.newBuilder()
-                .setBookId(EXISTING_BOOK.getId().toString())
+                .setBookId(EXISTING_BOOK_ID)
                 .setNewBook(payload)
                 .build();
         // when
-        StreamRecorder<Book.BookDto> recorder = updateBookRequest(testable, malformedUpdateBookRequest);
-
-        // then
-        assertThat(recorder.getError()).isInstanceOf(RequestValidationException.class);
+        testable.updateBook(malformedUpdateBookRequest)
+                .as(StepVerifier::create)
+                // then
+                .expectError(RequestValidationException.class)
+                .verify();
     }
 
     @Test
-    void shouldReturnNameOfTheBookThatWasProvidedInPayload() throws Exception {
+    void shouldReturnNameOfTheBookThatWasProvidedInPayload() {
         // given
-        DefaultGrpcBookService testable = testableBuilder()
+        DefaultReactiveBookService testable = testableBuilder()
                 .withBooks(EXISTING_BOOK)
                 .build();
 
-        UpdateBookRequest updateBookRequest = UpdateBookRequestFaker.withId(EXISTING_BOOK.getId()).get();
+        UpdateBookRequest updateBookRequest = UpdateBookRequestFaker.withId(EXISTING_BOOK_ID).get();
 
         // when
-        BookDto bookDto = updateBookRequestAndGetResponsePayload(testable, updateBookRequest);
-
-        // then
-        assertThat(bookDto.getName()).isEqualTo(updateBookRequest.getNewBook().getName());
+        testable.updateBook(updateBookRequest)
+                .map(Book.BookDto::getName)
+                .as(StepVerifier::create)
+                .expectNext(updateBookRequest.getNewBook().getName())
+                .verifyComplete();
     }
 
     @Test
-    void shouldReturnAuthorOfTheBookThatWasProvidedInPayload() throws Exception {
+    void shouldReturnAuthorOfTheBookThatWasProvidedInPayload() {
         // given
-        DefaultGrpcBookService testable = testableBuilder()
+        DefaultReactiveBookService testable = testableBuilder()
                 .withBooks(EXISTING_BOOK)
                 .build();
 
-        UpdateBookRequest updateBookRequest = UpdateBookRequestFaker.withId(EXISTING_BOOK.getId()).get();
+        UpdateBookRequest updateBookRequest = UpdateBookRequestFaker.withId(EXISTING_BOOK_ID).get();
 
         // when
-        BookDto bookDto = updateBookRequestAndGetResponsePayload(testable, updateBookRequest);
-
-        // then
-        assertThat(bookDto.getAuthor()).isEqualTo(updateBookRequest.getNewBook().getAuthor());
+        testable.updateBook(updateBookRequest)
+                .map(Book.BookDto::getAuthor)
+                .as(StepVerifier::create)
+                .expectNext(updateBookRequest.getNewBook().getAuthor())
+                .verifyComplete();
     }
 
     @Test
-    void shouldReturnIsbnOfTheBookThatWasProvided() throws Exception {
+    void shouldReturnIsbnOfTheBookThatWasProvided() {
         // given
-        DefaultGrpcBookService testable = testableBuilder()
+        DefaultReactiveBookService testable = testableBuilder()
                 .withBooks(EXISTING_BOOK)
                 .build();
 
-        UpdateBookRequest updateBookRequest = UpdateBookRequestFaker.withId(EXISTING_BOOK.getId()).get();
+        UpdateBookRequest updateBookRequest = UpdateBookRequestFaker.withId(EXISTING_BOOK_ID).get();
+        // when
+        testable.updateBook(updateBookRequest)
+                .map(Book.BookDto::getIsbn)
+                .as(StepVerifier::create)
+                // then
+                .expectNext(updateBookRequest.getNewBook().getIsbn())
+                .verifyComplete();
+    }
+
+    @Test
+    void shouldReturnQuantityOfTheBookThatWasProvidedInPayload() {
+        // given
+        DefaultReactiveBookService testable = testableBuilder()
+                .withBooks(EXISTING_BOOK)
+                .build();
+
+        UpdateBookRequest updateBookRequest = UpdateBookRequestFaker.withId(EXISTING_BOOK_ID).get();
 
         // when
-        BookDto bookDto = updateBookRequestAndGetResponsePayload(testable, updateBookRequest);
-
-        // then
-        assertThat(bookDto.getIsbn()).isEqualTo(updateBookRequest.getNewBook().getIsbn());
+        testable.updateBook(updateBookRequest)
+                .map(Book.BookDto::getQuantity)
+                .as(StepVerifier::create)
+                .expectNext(updateBookRequest.getNewBook().getQuantity())
+                .verifyComplete();
     }
 
     @Test
-    void shouldReturnQuantityOfTheBookThatWasProvidedInPayload() throws Exception {
+    void shouldReturnIdOfTheBookThatWasRequested() {
         // given
-        DefaultGrpcBookService testable = testableBuilder()
+        DefaultReactiveBookService testable = testableBuilder()
                 .withBooks(EXISTING_BOOK)
                 .build();
 
-        UpdateBookRequest updateBookRequest = UpdateBookRequestFaker.withId(EXISTING_BOOK.getId()).get();
+        UpdateBookRequest updateBookRequest = UpdateBookRequestFaker.withId(EXISTING_BOOK_ID).get();
 
         // when
-        BookDto bookDto = updateBookRequestAndGetResponsePayload(testable, updateBookRequest);
-
-        // then
-        assertThat(bookDto.getQuantity()).isEqualTo(updateBookRequest.getNewBook().getQuantity());
+        testable.updateBook(updateBookRequest)
+                .map(Book.BookDto::getId)
+                .as(StepVerifier::create)
+                // then
+                .expectNext(updateBookRequest.getBookId())
+                .verifyComplete();
     }
 
     @Test
-    void shouldReturnIdOfTheBookThatWasRequested() throws Exception {
+    void shouldSaveUpdatedBook() {
+        Book.FetchBookRequest fetchUpdatedBook = Book.FetchBookRequest.newBuilder().setBookId(EXISTING_BOOK_ID).build();
+        UpdateBookRequest updateBookRequest = UpdateBookRequestFaker.withId(EXISTING_BOOK_ID).get();
+
+        DefaultReactiveBookService testable = testableBuilder()
+                .withBooks(EXISTING_BOOK)
+                .build();
+
+        Book.BookDto updatedBookPayload = testable.updateBook(updateBookRequest).block();
+
+        //noinspection DataFlowIssue
+        testable.fetchBook(fetchUpdatedBook)
+                .as(StepVerifier::create)
+                .expectNext(updatedBookPayload)
+                .verifyComplete();
+    }
+
+    @Test
+    void shouldThrowErrorIfBookByIdDoesNotExist() {
         // given
-        DefaultGrpcBookService testable = testableBuilder()
+        DefaultReactiveBookService testable = testableBuilder()
                 .withBooks(EXISTING_BOOK)
                 .build();
 
-        UpdateBookRequest updateBookRequest = UpdateBookRequestFaker.withId(EXISTING_BOOK.getId()).get();
-
+        UpdateBookRequest updateBookRequest = UpdateBookRequestFaker.withId(NOT_EXISTING_BOOK_ID).get();
         // when
-        BookDto bookDto = updateBookRequestAndGetResponsePayload(testable, updateBookRequest);
-
-        // then
-        assertThat(bookDto.getId()).isEqualTo(updateBookRequest.getBookId());
-    }
-
-    @Test
-    void shouldSaveUpdatedBook() throws Exception {
-        DefaultGrpcBookService testable = testableBuilder()
-                .withBooks(EXISTING_BOOK)
-                .build();
-
-        UpdateBookRequest updateBookRequest = UpdateBookRequestFaker.withId(EXISTING_BOOK.getId()).get();
-
-        BookDto responsePayload = updateBookRequestAndGetResponsePayload(testable, updateBookRequest);
-
-        BookDto foundBook = fetchBookAndGetResponsePayload(testable, responsePayload.getId());
-
-        assertThat(responsePayload).isEqualTo(foundBook);
-    }
-
-    @Test
-    void shouldThrowErrorIfBookByIdDoesNotExist() throws Exception {
-        // given
-        DefaultGrpcBookService testable = testableBuilder()
-                .withBooks(EXISTING_BOOK)
-                .build();
-
-        UpdateBookRequest updateBookRequest = UpdateBookRequestFaker.withId(UUID.randomUUID()).get();
-        // when
-        StreamRecorder<BookDto> response = updateBookRequest(testable, updateBookRequest);
-
-        // then
-        assertThat(response.getError()).isInstanceOf(BookNotFoundException.class);
+        testable.updateBook(updateBookRequest)
+                .as(StepVerifier::create)
+                .expectError(BookNotFoundException.class)
+                .verify();
     }
 }

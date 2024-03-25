@@ -3,7 +3,11 @@ plugins {
     id 'org.springframework.boot' version '3.2.4'
     id 'io.spring.dependency-management' version '1.1.4'
     id "com.google.protobuf" version "0.9.4"
+    id "idea"
+    id "io.github.lognet.grpc-spring-boot" version '5.1.5'
 }
+
+import org.lognet.springboot.grpc.gradle.ReactiveFeature
 
 group = 'com.odeyalo.grpc'
 version = '0.0.1-SNAPSHOT'
@@ -32,16 +36,19 @@ dependencies {
     // core dependencies
     // using old version since starter doesn't support a new one :(
     implementation 'com.google.protobuf:protobuf-java:3.24.0'
-    implementation 'net.devh:grpc-server-spring-boot-starter:3.0.0.RELEASE'
-    implementation ('com.github.javafaker:javafaker:1.0.2') { exclude module: 'org.yaml' }
+    implementation 'io.github.lognet:grpc-spring-boot-starter:5.1.5'
+    implementation('com.github.javafaker:javafaker:1.0.2') { exclude module: 'org.yaml' }
     implementation group: 'org.yaml', name: 'snakeyaml', version: '1.26'
     implementation 'org.springframework.boot:spring-boot-starter-webflux'
     implementation 'org.jetbrains:annotations:23.0.0'
     implementation 'org.mapstruct:mapstruct:1.5.5.Final'
-    implementation  'build.buf:protovalidate:0.1.6'
+    implementation 'build.buf:protovalidate:0.1.6'
+    implementation 'com.salesforce.servicelibs:reactor-grpc-stub:1.2.4'
+    implementation 'com.salesforce.servicelibs:reactor-grpc:1.2.4'
     // Database
     implementation 'org.flywaydb:flyway-core'
     implementation 'org.springframework.boot:spring-boot-starter-data-r2dbc'
+
     runtimeOnly 'org.postgresql:postgresql'
     runtimeOnly 'org.postgresql:r2dbc-postgresql'
     // annotation processors
@@ -51,7 +58,7 @@ dependencies {
     // tests
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
     testImplementation 'io.projectreactor:reactor-test'
-    testImplementation "io.grpc:grpc-testing:1.60.1"
+    testImplementation "io.grpc:grpc-testing:1.58.0"
     testImplementation 'org.testcontainers:postgresql:1.19.7'
     testImplementation 'org.testcontainers:junit-jupiter:1.19.7'
 
@@ -66,15 +73,41 @@ protobuf {
         artifact = "com.google.protobuf:protoc:3.24.0"
     }
 
+    clean {
+        delete protobuf.generatedFilesBaseDir
+    }
+
     plugins {
         grpc {
-            artifact = 'io.grpc:protoc-gen-grpc-java:1.60.1'
+            artifact = 'io.grpc:protoc-gen-grpc-java:1.58.0'
+        }
+
+        reactor {
+            artifact = "com.salesforce.servicelibs:reactor-grpc:1.2.4"
         }
     }
 
+    grpcSpringBoot {
+        reactiveFeature.set(ReactiveFeature.REACTOR)
+    }
+
     generateProtoTasks {
-        all()*.plugins {
+        ofSourceSet("main")*.plugins {
             grpc {}
+            reactor {}
         }
+    }
+}
+
+sourceSets.main.java.srcDir new File(buildDir, 'generated/source/proto/main/grpc')
+sourceSets.main.java.srcDir new File(buildDir, 'generated/source/proto/main/rxgrpc')
+sourceSets.main.java.srcDir new File(buildDir, 'generated/source/proto/main/reactor')
+sourceSets.main.java.srcDir new File(buildDir, 'generated/source/proto/main/java')
+idea {
+    module {
+        generatedSourceDirs += file("build/generated/source/proto/main/grpc")
+        generatedSourceDirs += file("build/generated/source/proto/main/rxgrpc")
+        generatedSourceDirs += file("build/generated/source/proto/main/reactor")
+        generatedSourceDirs += file("build/generated/source/proto/main/java")
     }
 }

@@ -33,6 +33,11 @@ public final class BookEntityFaker {
         return this;
     }
 
+    public BookEntityFaker setIdString(@NotNull String id) {
+        builder.id(UUID.fromString(id));
+        return this;
+    }
+
     public BookEntityFaker setTitle(@NotNull String title) {
         builder.name(title);
         return this;
