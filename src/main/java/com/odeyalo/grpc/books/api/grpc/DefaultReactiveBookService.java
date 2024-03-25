@@ -5,6 +5,7 @@ import com.odeyalo.grpc.books.exception.BookNotFoundException;
 import com.odeyalo.grpc.books.exception.RequestValidationException;
 import com.odeyalo.grpc.books.service.BookService;
 import com.odeyalo.grpc.books.support.converter.BookDtoConverter;
+import com.odeyalo.grpc.books.support.converter.CreateBookInfoConverter;
 import com.odeyalo.grpc.books.support.validation.ReactiveGrpcRequestValidator;
 import org.jetbrains.annotations.NotNull;
 import org.lognet.springboot.grpc.GRpcService;
@@ -17,11 +18,16 @@ public final class DefaultReactiveBookService extends ReactorBookServiceGrpc.Boo
     private final ReactiveGrpcRequestValidator grpcRequestValidator;
     private final BookService bookService;
     private final BookDtoConverter bookDtoConverter;
+    private final CreateBookInfoConverter createBookInfoConverter;
 
-    public DefaultReactiveBookService(ReactiveGrpcRequestValidator grpcRequestValidator, BookService bookService, BookDtoConverter bookDtoConverter) {
+    public DefaultReactiveBookService(ReactiveGrpcRequestValidator grpcRequestValidator,
+                                      BookService bookService,
+                                      BookDtoConverter bookDtoConverter,
+                                      CreateBookInfoConverter createBookInfoConverter) {
         this.grpcRequestValidator = grpcRequestValidator;
         this.bookService = bookService;
         this.bookDtoConverter = bookDtoConverter;
+        this.createBookInfoConverter = createBookInfoConverter;
     }
 
     @Override
@@ -32,6 +38,12 @@ public final class DefaultReactiveBookService extends ReactorBookServiceGrpc.Boo
                 .switchIfEmpty(Mono.defer(() -> Mono.error(BookNotFoundException.defaultException())));
     }
 
+    @Override
+    public Mono<Book.BookDto> addBook(Book.CreateBookRequest request) {
+        return validate(request)
+                .map(createBookInfoConverter::toCreateBookInfo)
+                .flatMap(it -> bookService.save(it).map(bookDtoConverter::toBookDto));
+     }
 
     @NotNull
     private <T extends Message> Mono<@NotNull T> validate(@NotNull T request) {
