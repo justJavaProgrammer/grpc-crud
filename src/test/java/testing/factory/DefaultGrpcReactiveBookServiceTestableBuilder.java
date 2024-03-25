@@ -9,6 +9,7 @@ import com.odeyalo.grpc.books.service.BookService;
 import com.odeyalo.grpc.books.support.converter.BookConverterImpl;
 import com.odeyalo.grpc.books.support.converter.BookDtoConverterImpl;
 import com.odeyalo.grpc.books.support.converter.CreateBookInfoConverterImpl;
+import com.odeyalo.grpc.books.support.converter.UpdateBookInfoConverterImpl;
 import com.odeyalo.grpc.books.support.validation.ReactiveGrpcRequestValidator;
 import com.odeyalo.grpc.books.support.validation.WrapperReactiveGrpcRequestValidator;
 
@@ -30,6 +31,7 @@ public class DefaultGrpcReactiveBookServiceTestableBuilder {
                 requestValidator,
                 new BookService(bookRepository, new BookConverterImpl()),
                 new BookDtoConverterImpl(),
-                new CreateBookInfoConverterImpl());
+                new CreateBookInfoConverterImpl(),
+                new UpdateBookInfoConverterImpl());
     }
 }

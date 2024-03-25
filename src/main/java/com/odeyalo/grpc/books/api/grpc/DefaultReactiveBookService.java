@@ -4,8 +4,10 @@ import com.google.protobuf.Message;
 import com.odeyalo.grpc.books.exception.BookNotFoundException;
 import com.odeyalo.grpc.books.exception.RequestValidationException;
 import com.odeyalo.grpc.books.service.BookService;
+import com.odeyalo.grpc.books.service.UpdateBookInfo;
 import com.odeyalo.grpc.books.support.converter.BookDtoConverter;
 import com.odeyalo.grpc.books.support.converter.CreateBookInfoConverter;
+import com.odeyalo.grpc.books.support.converter.UpdateBookInfoConverter;
 import com.odeyalo.grpc.books.support.validation.ReactiveGrpcRequestValidator;
 import org.jetbrains.annotations.NotNull;
 import org.lognet.springboot.grpc.GRpcService;
@@ -19,15 +21,17 @@ public final class DefaultReactiveBookService extends ReactorBookServiceGrpc.Boo
     private final BookService bookService;
     private final BookDtoConverter bookDtoConverter;
     private final CreateBookInfoConverter createBookInfoConverter;
+    private final UpdateBookInfoConverter updateBookInfoConverter;
 
     public DefaultReactiveBookService(ReactiveGrpcRequestValidator grpcRequestValidator,
                                       BookService bookService,
                                       BookDtoConverter bookDtoConverter,
-                                      CreateBookInfoConverter createBookInfoConverter) {
+                                      CreateBookInfoConverter createBookInfoConverter, UpdateBookInfoConverter updateBookInfoConverter) {
         this.grpcRequestValidator = grpcRequestValidator;
         this.bookService = bookService;
         this.bookDtoConverter = bookDtoConverter;
         this.createBookInfoConverter = createBookInfoConverter;
+        this.updateBookInfoConverter = updateBookInfoConverter;
     }
 
     @Override
@@ -46,6 +50,16 @@ public final class DefaultReactiveBookService extends ReactorBookServiceGrpc.Boo
     }
 
     @Override
+    public Mono<Book.BookDto> updateBook(Book.UpdateBookRequest request) {
+        return validate(request)
+                .map(this::toUpdateBookInfo)
+                .flatMap(it -> bookService
+                        .updateBook(UUID.fromString(request.getBookId()), it)
+                        .onErrorMap(error -> BookNotFoundException.defaultException())
+                        .map(bookDtoConverter::toBookDto));
+    }
+
+    @Override
     public Mono<Book.DeleteBookResponse> removeBook(Book.DeleteBookRequest request) {
         return validate(request)
                 .flatMap(it -> bookService.removeById(UUID.fromString(request.getBookId())))
@@ -57,6 +71,11 @@ public final class DefaultReactiveBookService extends ReactorBookServiceGrpc.Boo
         return Book.DeleteBookResponse.newBuilder()
                 .setStatus(Book.DeletionStatus.SUCCESS)
                 .build();
+    }
+
+    @NotNull
+    private UpdateBookInfo toUpdateBookInfo(Book.UpdateBookRequest request) {
+        return updateBookInfoConverter.toUpdateBookInfo(request.getNewBook());
     }
 
     @NotNull
