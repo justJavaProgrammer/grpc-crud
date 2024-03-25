@@ -1,6 +1,7 @@
 package com.odeyalo.grpc.books.api.grpc;
 
 import com.odeyalo.grpc.books.entity.BookEntity;
+import com.odeyalo.grpc.books.exception.RequestValidationException;
 import org.junit.jupiter.api.Test;
 import reactor.test.StepVerifier;
 import testing.faker.BookEntityFaker;
@@ -15,6 +16,7 @@ class FetchBookByIdTest extends AbstractBookClientTest {
             .setIdString(EXISTING_BOOK_ID)
             .get();
     private static final Book.FetchBookRequest FETCH_EXISTING_BOOK_REQUEST = Book.FetchBookRequest.newBuilder().setBookId(EXISTING_BOOK_ID).build();
+    private static final Book.FetchBookRequest MALFORMED_FETCH_BOOK_REQUEST = Book.FetchBookRequest.newBuilder().setBookId("123").build();
 
     @Test
     void shouldFetchBookByItsId() {
@@ -27,5 +29,16 @@ class FetchBookByIdTest extends AbstractBookClientTest {
                 .as(StepVerifier::create)
                 .expectNext(EXISTING_BOOK_ID)
                 .verifyComplete();
+    }
+
+    @Test
+    void shouldReturnErrorIfNonUuidIsUsedAsId() {
+        DefaultReactiveBookService testable = testableBuilder().build();
+
+        testable.fetchBook(MALFORMED_FETCH_BOOK_REQUEST)
+                .map(Book.BookDto::getId)
+                .as(StepVerifier::create)
+                .expectError(RequestValidationException.class)
+                .verify();
     }
 }
