@@ -146,4 +146,16 @@ class AddBookEndpointTest extends AbstractBookClientTest {
                 .expectNext(CREATE_NOVEL_REQUEST.getIsbn())
                 .verifyComplete();
     }
+
+    @Test
+    void shouldReturnSavedBookWithAuthorAsProvided() {
+        DefaultReactiveBookService testable = testableBuilder().build();
+        // when
+        testable.addBook(CREATE_NOVEL_REQUEST)
+                .map(Book.BookDto::getAuthor)
+                .as(StepVerifier::create)
+                // then
+                .expectNext(CREATE_NOVEL_REQUEST.getAuthor())
+                .verifyComplete();
+    }
 }
