@@ -15,7 +15,7 @@ import java.util.UUID;
 
 import static testing.factory.DefaultGrpcReactiveBookServiceTestableBuilder.testableBuilder;
 
-class UpdateBookEndpointTest extends AbstractBookClientTest {
+class UpdateBookEndpointTest {
     private static final String EXISTING_BOOK_ID = UUID.randomUUID().toString();
     private static final BookEntity EXISTING_BOOK = BookEntityFaker.create().setId(UUID.fromString(EXISTING_BOOK_ID)).get();
     private static final String NOT_EXISTING_BOOK_ID = UUID.randomUUID().toString();

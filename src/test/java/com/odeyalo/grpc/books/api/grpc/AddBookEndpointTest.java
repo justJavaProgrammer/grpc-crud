@@ -8,7 +8,7 @@ import testing.faker.CreateBookRequestFaker;
 
 import static testing.factory.DefaultGrpcReactiveBookServiceTestableBuilder.testableBuilder;
 
-class AddBookEndpointTest extends AbstractBookClientTest {
+class AddBookEndpointTest {
     public static final Book.CreateBookRequest CREATE_NOVEL_REQUEST = Book.CreateBookRequest.newBuilder()
             .setName("Three Days of Happiness")
             .setIsbn("12345677899")
