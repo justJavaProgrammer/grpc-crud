@@ -67,4 +67,17 @@ class FetchBookByIdTest extends AbstractBookClientTest {
                 .expectNext(EXISTING_BOOK.getName())
                 .verifyComplete();
     }
+
+    @Test
+    void shouldFetchBookByItsIdAndReturnCorrectIsbn() {
+        DefaultReactiveBookService testable = testableBuilder()
+                .withBooks(EXISTING_BOOK)
+                .build();
+
+        testable.fetchBook(FETCH_EXISTING_BOOK_REQUEST)
+                .map(Book.BookDto::getIsbn)
+                .as(StepVerifier::create)
+                .expectNext(EXISTING_BOOK.getIsbn())
+                .verifyComplete();
+    }
 }
