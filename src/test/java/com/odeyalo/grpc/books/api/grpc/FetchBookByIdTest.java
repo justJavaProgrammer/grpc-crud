@@ -1,5 +1,6 @@
 package com.odeyalo.grpc.books.api.grpc;
 
+import com.odeyalo.grpc.books.api.grpc.Book.FetchBookRequest;
 import com.odeyalo.grpc.books.entity.BookEntity;
 import com.odeyalo.grpc.books.exception.BookNotFoundException;
 import com.odeyalo.grpc.books.exception.RequestValidationException;
@@ -11,14 +12,21 @@ import java.util.UUID;
 
 import static testing.factory.DefaultGrpcReactiveBookServiceTestableBuilder.testableBuilder;
 
-class FetchBookByIdTest extends AbstractBookClientTest {
+class FetchBookByIdTest {
     private static final String EXISTING_BOOK_ID = UUID.randomUUID().toString();
+
     private static final BookEntity EXISTING_BOOK = BookEntityFaker.create()
             .setIdString(EXISTING_BOOK_ID)
             .get();
-    private static final Book.FetchBookRequest FETCH_EXISTING_BOOK_REQUEST = Book.FetchBookRequest.newBuilder().setBookId(EXISTING_BOOK_ID).build();
-    private static final Book.FetchBookRequest FETCH_NOT_EXISTING_BOOK_REQUEST = Book.FetchBookRequest.newBuilder().setBookId(UUID.randomUUID().toString()).build();
-    private static final Book.FetchBookRequest MALFORMED_FETCH_BOOK_REQUEST = Book.FetchBookRequest.newBuilder().setBookId("123").build();
+    private static final FetchBookRequest FETCH_EXISTING_BOOK_REQUEST = FetchBookRequest.newBuilder()
+            .setBookId(EXISTING_BOOK_ID)
+            .build();
+    private static final FetchBookRequest FETCH_NOT_EXISTING_BOOK_REQUEST = FetchBookRequest.newBuilder()
+            .setBookId(UUID.randomUUID().toString())
+            .build();
+    private static final FetchBookRequest MALFORMED_FETCH_BOOK_REQUEST = FetchBookRequest.newBuilder()
+            .setBookId("123")
+            .build();
 
     @Test
     void shouldFetchBookByItsId() {
