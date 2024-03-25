@@ -6,6 +6,7 @@ import com.odeyalo.grpc.books.exception.RequestValidationException;
 import org.junit.jupiter.api.Test;
 import reactor.test.StepVerifier;
 import testing.faker.BookEntityFaker;
+import testing.faker.UpdateBookPayloadFaker;
 import testing.faker.UpdateBookRequestFaker;
 
 import java.util.UUID;
@@ -42,6 +43,23 @@ class UpdateBookEndpointTest extends AbstractBookClientTest {
         testable.updateBook(updateBookRequest)
                 .as(StepVerifier::create)
                 // then
+                .expectError(RequestValidationException.class)
+                .verify();
+    }
+
+    @Test
+    void shouldReturnErrorIfBookNameIsLessThan1Symbol() {
+        // given
+        DefaultReactiveBookService testable = testableBuilder().build();
+        UpdateBookRequest.UpdateBookPayload payload = UpdateBookPayloadFaker.create().setTitle("").get();
+
+        UpdateBookRequest malformedUpdateBookRequest = UpdateBookRequest.newBuilder()
+                .setBookId(EXISTING_BOOK_ID)
+                .setNewBook(payload)
+                .build();
+        // when
+        testable.updateBook(malformedUpdateBookRequest)
+                .as(StepVerifier::create)
                 .expectError(RequestValidationException.class)
                 .verify();
     }
