@@ -2,6 +2,7 @@ package com.odeyalo.grpc.books.api.grpc;
 
 import com.odeyalo.grpc.books.api.grpc.Book.UpdateBookRequest;
 import com.odeyalo.grpc.books.entity.BookEntity;
+import com.odeyalo.grpc.books.exception.RequestValidationException;
 import org.junit.jupiter.api.Test;
 import reactor.test.StepVerifier;
 import testing.faker.BookEntityFaker;
@@ -30,5 +31,18 @@ class UpdateBookEndpointTest extends AbstractBookClientTest {
                 // then
                 .expectNextCount(1)
                 .verifyComplete();
+    }
+
+    @Test
+    void shouldReturnValidationErrorIfIdIsNotUUID() {
+        // given
+        DefaultReactiveBookService testable = testableBuilder().build();
+        UpdateBookRequest updateBookRequest = UpdateBookRequest.newBuilder().setBookId("123").build();
+        // when
+        testable.updateBook(updateBookRequest)
+                .as(StepVerifier::create)
+                // then
+                .expectError(RequestValidationException.class)
+                .verify();
     }
 }
