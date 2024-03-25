@@ -83,4 +83,23 @@ class UpdateBookEndpointTest extends AbstractBookClientTest {
                 .expectError(RequestValidationException.class)
                 .verify();
     }
+
+    @Test
+    void shouldReturnErrorIfBookIsbnIsLargerThan15Symbols() {
+        // given
+        DefaultReactiveBookService testable = testableBuilder().build();
+        UpdateBookPayload payload = UpdateBookPayloadFaker.create()
+                .setIsbn("very_long_string_that_is_longer_than_15_symbols")
+                .get();
+
+        UpdateBookRequest malformedUpdateBookRequest = UpdateBookRequest.newBuilder()
+                .setBookId(EXISTING_BOOK_ID)
+                .setNewBook(payload)
+                .build();
+        // when
+        testable.updateBook(malformedUpdateBookRequest)
+                .as(StepVerifier::create)
+                .expectError(RequestValidationException.class)
+                .verify();
+    }
 }
