@@ -102,4 +102,24 @@ class UpdateBookEndpointTest extends AbstractBookClientTest {
                 .expectError(RequestValidationException.class)
                 .verify();
     }
+
+    @Test
+    void shouldReturnErrorIfBookAuthorIsLessThan5Symbols() {
+        // given
+        DefaultReactiveBookService testable = testableBuilder().build();
+        UpdateBookPayload payload = UpdateBookPayloadFaker.create()
+                .setAuthorName("less")
+                .get();
+
+        UpdateBookRequest malformedUpdateBookRequest = UpdateBookRequest.newBuilder()
+                .setBookId(EXISTING_BOOK_ID)
+                .setNewBook(payload)
+                .build();
+        // when
+        testable.updateBook(malformedUpdateBookRequest)
+                .as(StepVerifier::create)
+                // then
+                .expectError(RequestValidationException.class)
+                .verify();
+    }
 }
