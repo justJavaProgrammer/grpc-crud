@@ -1,6 +1,7 @@
 package com.odeyalo.grpc.books.api.grpc;
 
 import com.odeyalo.grpc.books.entity.BookEntity;
+import com.odeyalo.grpc.books.exception.BookNotFoundException;
 import com.odeyalo.grpc.books.exception.RequestValidationException;
 import org.junit.jupiter.api.Test;
 import reactor.test.StepVerifier;
@@ -16,6 +17,7 @@ class FetchBookByIdTest extends AbstractBookClientTest {
             .setIdString(EXISTING_BOOK_ID)
             .get();
     private static final Book.FetchBookRequest FETCH_EXISTING_BOOK_REQUEST = Book.FetchBookRequest.newBuilder().setBookId(EXISTING_BOOK_ID).build();
+    private static final Book.FetchBookRequest FETCH_NOT_EXISTING_BOOK_REQUEST = Book.FetchBookRequest.newBuilder().setBookId(UUID.randomUUID().toString()).build();
     private static final Book.FetchBookRequest MALFORMED_FETCH_BOOK_REQUEST = Book.FetchBookRequest.newBuilder().setBookId("123").build();
 
     @Test
@@ -39,6 +41,17 @@ class FetchBookByIdTest extends AbstractBookClientTest {
                 .map(Book.BookDto::getId)
                 .as(StepVerifier::create)
                 .expectError(RequestValidationException.class)
+                .verify();
+    }
+
+    @Test
+    void shouldReturnBookNotFoundErrorIfBookDoesNotExist() {
+        DefaultReactiveBookService testable = testableBuilder().build();
+
+        testable.fetchBook(FETCH_NOT_EXISTING_BOOK_REQUEST)
+                .map(Book.BookDto::getId)
+                .as(StepVerifier::create)
+                .expectError(BookNotFoundException.class)
                 .verify();
     }
 }
