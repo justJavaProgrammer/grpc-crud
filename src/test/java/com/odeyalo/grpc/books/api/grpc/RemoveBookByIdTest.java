@@ -1,5 +1,6 @@
 package com.odeyalo.grpc.books.api.grpc;
 
+import com.odeyalo.grpc.books.api.grpc.Book.DeletionStatus;
 import com.odeyalo.grpc.books.entity.BookEntity;
 import com.odeyalo.grpc.books.exception.RequestValidationException;
 import org.junit.jupiter.api.Test;
@@ -44,5 +45,18 @@ class RemoveBookByIdTest extends AbstractBookClientTest {
                 .as(StepVerifier::create)
                 .expectError(RequestValidationException.class)
                 .verify();
+    }
+
+    @Test
+    void shouldReturnSuccessCompletionStatusIfBookExist() {
+        DefaultReactiveBookService testable = testableBuilder()
+                .withBooks(EXISTING_BOOK)
+                .build();
+
+        testable.removeBook(DELETE_EXISTING_BOOK_REQUEST)
+                .map(Book.DeleteBookResponse::getStatus)
+                .as(StepVerifier::create)
+                .expectNext(DeletionStatus.SUCCESS)
+                .verifyComplete();
     }
 }
