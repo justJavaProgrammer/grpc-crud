@@ -3,6 +3,7 @@ package com.odeyalo.grpc.books.api.grpc;
 import com.odeyalo.grpc.books.api.grpc.Book.UpdateBookRequest;
 import com.odeyalo.grpc.books.api.grpc.Book.UpdateBookRequest.UpdateBookPayload;
 import com.odeyalo.grpc.books.entity.BookEntity;
+import com.odeyalo.grpc.books.exception.BookNotFoundException;
 import com.odeyalo.grpc.books.exception.RequestValidationException;
 import org.junit.jupiter.api.Test;
 import reactor.test.StepVerifier;
@@ -17,6 +18,7 @@ import static testing.factory.DefaultGrpcReactiveBookServiceTestableBuilder.test
 class UpdateBookEndpointTest extends AbstractBookClientTest {
     private static final String EXISTING_BOOK_ID = UUID.randomUUID().toString();
     private static final BookEntity EXISTING_BOOK = BookEntityFaker.create().setId(UUID.fromString(EXISTING_BOOK_ID)).get();
+    private static final String NOT_EXISTING_BOOK_ID = UUID.randomUUID().toString();
 
     @Test
     void shouldCompleteWithoutAnyError() {
@@ -245,5 +247,20 @@ class UpdateBookEndpointTest extends AbstractBookClientTest {
                 .as(StepVerifier::create)
                 .expectNext(updatedBookPayload)
                 .verifyComplete();
+    }
+
+    @Test
+    void shouldThrowErrorIfBookByIdDoesNotExist() {
+        // given
+        DefaultReactiveBookService testable = testableBuilder()
+                .withBooks(EXISTING_BOOK)
+                .build();
+
+        UpdateBookRequest updateBookRequest = UpdateBookRequestFaker.withId(NOT_EXISTING_BOOK_ID).get();
+        // when
+        testable.updateBook(updateBookRequest)
+                .as(StepVerifier::create)
+                .expectError(BookNotFoundException.class)
+                .verify();
     }
 }
