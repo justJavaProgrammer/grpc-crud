@@ -193,4 +193,21 @@ class UpdateBookEndpointTest extends AbstractBookClientTest {
                 .expectNext(updateBookRequest.getNewBook().getIsbn())
                 .verifyComplete();
     }
+
+    @Test
+    void shouldReturnQuantityOfTheBookThatWasProvidedInPayload() {
+        // given
+        DefaultReactiveBookService testable = testableBuilder()
+                .withBooks(EXISTING_BOOK)
+                .build();
+
+        UpdateBookRequest updateBookRequest = UpdateBookRequestFaker.withId(EXISTING_BOOK_ID).get();
+
+        // when
+        testable.updateBook(updateBookRequest)
+                .map(Book.BookDto::getQuantity)
+                .as(StepVerifier::create)
+                .expectNext(updateBookRequest.getNewBook().getQuantity())
+                .verifyComplete();
+    }
 }
