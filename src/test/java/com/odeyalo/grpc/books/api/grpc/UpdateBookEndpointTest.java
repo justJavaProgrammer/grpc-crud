@@ -1,6 +1,7 @@
 package com.odeyalo.grpc.books.api.grpc;
 
 import com.odeyalo.grpc.books.api.grpc.Book.UpdateBookRequest;
+import com.odeyalo.grpc.books.api.grpc.Book.UpdateBookRequest.UpdateBookPayload;
 import com.odeyalo.grpc.books.entity.BookEntity;
 import com.odeyalo.grpc.books.exception.RequestValidationException;
 import org.junit.jupiter.api.Test;
@@ -51,7 +52,26 @@ class UpdateBookEndpointTest extends AbstractBookClientTest {
     void shouldReturnErrorIfBookNameIsLessThan1Symbol() {
         // given
         DefaultReactiveBookService testable = testableBuilder().build();
-        UpdateBookRequest.UpdateBookPayload payload = UpdateBookPayloadFaker.create().setTitle("").get();
+        UpdateBookPayload payload = UpdateBookPayloadFaker.create().setTitle("").get();
+
+        UpdateBookRequest malformedUpdateBookRequest = UpdateBookRequest.newBuilder()
+                .setBookId(EXISTING_BOOK_ID)
+                .setNewBook(payload)
+                .build();
+        // when
+        testable.updateBook(malformedUpdateBookRequest)
+                .as(StepVerifier::create)
+                .expectError(RequestValidationException.class)
+                .verify();
+    }
+
+    @Test
+    void shouldReturnErrorIfBookIsbnIsLessThan10Symbols() {
+        // given
+        DefaultReactiveBookService testable = testableBuilder().build();
+        UpdateBookPayload payload = UpdateBookPayloadFaker.create()
+                .setIsbn("12345")
+                .get();
 
         UpdateBookRequest malformedUpdateBookRequest = UpdateBookRequest.newBuilder()
                 .setBookId(EXISTING_BOOK_ID)
