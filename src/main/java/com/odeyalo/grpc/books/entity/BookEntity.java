@@ -8,6 +8,7 @@ import org.springframework.data.domain.Persistable;
 import org.springframework.data.relational.core.mapping.Column;
 import org.springframework.data.relational.core.mapping.Table;
 
+import java.net.URI;
 import java.util.UUID;
 
 @Data
@@ -24,6 +25,8 @@ public class BookEntity implements Persistable<UUID> {
     @NotNull
     String isbn;
     int quantity;
+    @NotNull
+    URI coverImage;
 
     @Override
     public boolean isNew() {
