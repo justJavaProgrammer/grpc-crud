@@ -14,6 +14,7 @@ class AddBookEndpointTest {
             .setIsbn("12345677899")
             .setAuthor("Sugaru Miaki")
             .setQuantity(10)
+            .setImageUrl("https://images-na.ssl-images-amazon.com/images/S/compressed.photo.goodreads.com/books/1591954433i/53972440.jpg")
             .build();
 
     @Test

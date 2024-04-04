@@ -5,6 +5,8 @@ import lombok.Builder;
 import lombok.Value;
 import org.jetbrains.annotations.NotNull;
 
+import java.net.URI;
+
 @Value
 @Builder
 @AllArgsConstructor(staticName = "of")
@@ -16,4 +18,6 @@ public class CreateBookInfo {
     @NotNull
     String isbn;
     int quantity;
+    @NotNull
+    URI coverImage;
 }

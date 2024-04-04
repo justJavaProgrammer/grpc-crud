@@ -2,9 +2,9 @@ package com.odeyalo.grpc.books.service;
 
 import com.odeyalo.grpc.books.entity.BookEntity;
 import com.odeyalo.grpc.books.exception.BookUpdateFailedException;
-import com.odeyalo.grpc.books.support.converter.BookConverter;
 import com.odeyalo.grpc.books.model.Book;
 import com.odeyalo.grpc.books.repository.BookRepository;
+import com.odeyalo.grpc.books.support.converter.BookConverter;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.springframework.stereotype.Component;
@@ -70,6 +70,7 @@ public final class BookService {
                 .author(book.getAuthor())
                 .quantity(book.getQuantity())
                 .isbn(book.getIsbn())
+                .coverImage(book.getCoverImage())
                 .build();
     }
 }

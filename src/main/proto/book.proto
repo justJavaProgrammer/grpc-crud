@@ -19,6 +19,7 @@ message CreateBookRequest {
     max_len: 15
   }];
   int32 quantity = 4 [(buf.validate.field).int32.gte = 0];
+  string imageUrl = 5 [(buf.validate.field).string.uri = true];
 }
 
 message UpdateBookRequest {
