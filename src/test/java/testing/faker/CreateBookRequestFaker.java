@@ -44,4 +44,9 @@ public class CreateBookRequestFaker {
         builder.setQuantity(quantity);
         return this;
     }
+
+    public CreateBookRequestFaker setCoverImage(String imageUrl) {
+        builder.setImageUrl(imageUrl);
+        return this;
+    }
 }

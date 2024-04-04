@@ -45,6 +45,20 @@ class AddBookEndpointTest {
     }
 
     @Test
+    void shouldReturnErrorIfBookCoverImageIsNotValidURI() {
+        // given
+        DefaultReactiveBookService testable = testableBuilder().build();
+        Book.CreateBookRequest createBookRequest = CreateBookRequestFaker.create()
+                .setCoverImage("invalid")
+                .get();
+        // when
+        testable.addBook(createBookRequest)
+                .as(StepVerifier::create)
+                .expectError(RequestValidationException.class)
+                .verify();
+    }
+
+    @Test
     void shouldReturnErrorIfBookIsbnIsLessThan10Symbols() {
         // given
         DefaultReactiveBookService testable = testableBuilder().build();
