@@ -5,6 +5,7 @@ import com.odeyalo.grpc.books.entity.BookEntity;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import java.net.URI;
 import java.util.UUID;
 
 public final class BookEntityFaker {
@@ -17,7 +18,8 @@ public final class BookEntityFaker {
                 .name(faker.book().title())
                 .author(faker.book().author())
                 .isbn(faker.code().isbn10())
-                .quantity(faker.random().nextInt(0, 50));
+                .quantity(faker.random().nextInt(0, 50))
+                .coverImage(URI.create(faker.internet().avatar()));
     }
 
     public static BookEntityFaker create() {

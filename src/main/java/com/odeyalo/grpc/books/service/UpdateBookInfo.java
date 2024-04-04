@@ -4,6 +4,8 @@ import lombok.Builder;
 import lombok.Value;
 import org.jetbrains.annotations.NotNull;
 
+import java.net.URI;
+
 @Value
 @Builder
 public class UpdateBookInfo {
@@ -14,4 +16,6 @@ public class UpdateBookInfo {
     @NotNull
     String isbn;
     int quantity;
+    @NotNull
+    URI coverImage;
 }

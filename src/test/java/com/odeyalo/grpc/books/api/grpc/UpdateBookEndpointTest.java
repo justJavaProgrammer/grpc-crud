@@ -87,6 +87,25 @@ class UpdateBookEndpointTest {
     }
 
     @Test
+    void shouldReturnErrorIfBookCoverImageIsNotValidURI() {
+        // given
+        DefaultReactiveBookService testable = testableBuilder().build();
+        UpdateBookPayload payload = UpdateBookPayloadFaker.create()
+                .setCoverImage("invalid_image")
+                .get();
+
+        UpdateBookRequest malformedUpdateBookRequest = UpdateBookRequest.newBuilder()
+                .setBookId(EXISTING_BOOK_ID)
+                .setNewBook(payload)
+                .build();
+        // when
+        testable.updateBook(malformedUpdateBookRequest)
+                .as(StepVerifier::create)
+                .expectError(RequestValidationException.class)
+                .verify();
+    }
+
+    @Test
     void shouldReturnErrorIfBookIsbnIsLargerThan15Symbols() {
         // given
         DefaultReactiveBookService testable = testableBuilder().build();
@@ -228,6 +247,24 @@ class UpdateBookEndpointTest {
                 .as(StepVerifier::create)
                 // then
                 .expectNext(updateBookRequest.getBookId())
+                .verifyComplete();
+    }
+
+    @Test
+    void shouldReturnImageUriAsWasProvided() {
+        // given
+        DefaultReactiveBookService testable = testableBuilder()
+                .withBooks(EXISTING_BOOK)
+                .build();
+
+        UpdateBookRequest updateBookRequest = UpdateBookRequestFaker.withId(EXISTING_BOOK_ID).get();
+
+        // when
+        testable.updateBook(updateBookRequest)
+                .map(Book.BookDto::getCoverImage)
+                .as(StepVerifier::create)
+                // then
+                .expectNext(updateBookRequest.getNewBook().getImageUrl())
                 .verifyComplete();
     }
 

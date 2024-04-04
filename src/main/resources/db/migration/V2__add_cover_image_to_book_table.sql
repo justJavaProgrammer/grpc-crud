@@ -1,0 +1,1 @@
+ALTER TABLE books ADD COLUMN cover_image VARCHAR(1000) NOT NULL DEFAULT 'https://as1.ftcdn.net/v2/jpg/04/48/35/42/1000_F_448354204_33yPB12jtqzD31robpa85NoPctJ2thRd.jpg'

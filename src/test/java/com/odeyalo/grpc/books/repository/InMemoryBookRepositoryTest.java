@@ -60,6 +60,25 @@ class InMemoryBookRepositoryTest {
     }
 
     @Test
+    void shouldSaveBookImage() {
+        // given
+        BookEntity book = BookEntityFaker.create().get();
+
+        var testable = InMemoryBookRepository.empty();
+        // when
+        testable.save(book)
+                .as(StepVerifier::create)
+                .expectNextCount(1)
+                .verifyComplete();
+        // then
+        testable.findBookById(book.getId())
+                .map(BookEntity::getCoverImage)
+                .as(StepVerifier::create)
+                .expectNext(book.getCoverImage())
+                .verifyComplete();
+    }
+
+    @Test
     void shouldGenerateIdForBookIfIdIsNull() {
         // given
         BookEntity book = BookEntityFaker.create().setId(null).get();

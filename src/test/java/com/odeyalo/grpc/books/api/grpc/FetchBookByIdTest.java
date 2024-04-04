@@ -115,4 +115,17 @@ class FetchBookByIdTest {
                 .expectNext(EXISTING_BOOK.getQuantity())
                 .verifyComplete();
     }
+
+    @Test
+    void shouldFetchBookByItsIdAndReturnCorrectCoverImage() {
+        DefaultReactiveBookService testable = testableBuilder()
+                .withBooks(EXISTING_BOOK)
+                .build();
+
+        testable.fetchBook(FETCH_EXISTING_BOOK_REQUEST)
+                .map(Book.BookDto::getCoverImage)
+                .as(StepVerifier::create)
+                .expectNext(EXISTING_BOOK.getCoverImage().toString())
+                .verifyComplete();
+    }
 }

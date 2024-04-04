@@ -9,6 +9,7 @@ message BookDto {
   string author = 3;
   string isbn = 4;
   int32 quantity = 5;
+  string coverImage = 6;
 }
 
 message CreateBookRequest {
@@ -19,6 +20,7 @@ message CreateBookRequest {
     max_len: 15
   }];
   int32 quantity = 4 [(buf.validate.field).int32.gte = 0];
+  string imageUrl = 5 [(buf.validate.field).string.uri = true];
 }
 
 message UpdateBookRequest {
@@ -33,6 +35,7 @@ message UpdateBookRequest {
       max_len: 15
     }];
     int32 quantity = 4 [(buf.validate.field).int32.gte = 0];
+    string imageUrl = 5 [(buf.validate.field).string.uri = true];
   }
 }
 

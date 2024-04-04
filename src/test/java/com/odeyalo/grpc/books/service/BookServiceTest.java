@@ -61,6 +61,24 @@ class BookServiceTest {
     }
 
     @Test
+    void shouldSaveBookAndUseBookCoverImageAsWasProvided() {
+        // given
+        CreateBookInfo createBookInfo = CreateBookInfoFaker.create().get();
+
+        var testable = TestableBuilder.builder().build();
+        // when
+        Book savedBook = testable.save(createBookInfo).block();
+
+        // then
+        //noinspection DataFlowIssue
+        testable.findBookById(savedBook.getId())
+                .map(Book::getCoverImage)
+                .as(StepVerifier::create)
+                .expectNext(createBookInfo.getCoverImage())
+                .verifyComplete();
+    }
+
+    @Test
     void shouldUpdateBookWithNewAuthorName() {
         // given
         Book book = BookFaker.create().get();

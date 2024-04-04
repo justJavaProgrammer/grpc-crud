@@ -14,6 +14,7 @@ class AddBookEndpointTest {
             .setIsbn("12345677899")
             .setAuthor("Sugaru Miaki")
             .setQuantity(10)
+            .setImageUrl("https://images-na.ssl-images-amazon.com/images/S/compressed.photo.goodreads.com/books/1591954433i/53972440.jpg")
             .build();
 
     @Test
@@ -39,6 +40,20 @@ class AddBookEndpointTest {
         testable.addBook(bookRequest)
                 .as(StepVerifier::create)
                 // then
+                .expectError(RequestValidationException.class)
+                .verify();
+    }
+
+    @Test
+    void shouldReturnErrorIfBookCoverImageIsNotValidURI() {
+        // given
+        DefaultReactiveBookService testable = testableBuilder().build();
+        Book.CreateBookRequest createBookRequest = CreateBookRequestFaker.create()
+                .setCoverImage("invalid")
+                .get();
+        // when
+        testable.addBook(createBookRequest)
+                .as(StepVerifier::create)
                 .expectError(RequestValidationException.class)
                 .verify();
     }

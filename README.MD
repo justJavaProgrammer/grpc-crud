@@ -38,7 +38,7 @@ To test endpoints you can use the ``localhost:6565`` endpoint.
 
 
 ## DTOs
-A Book DTO represent a simple information, such title, author, isbn, quantity and ID(UUID).
+A Book DTO represent a simple information, such title, author, isbn, quantity and ID(UUID), cover image.
 
 ```json
 {
@@ -46,7 +46,8 @@ A Book DTO represent a simple information, such title, author, isbn, quantity an
     "name": "Three Days of Happiness",
     "author": "Sugaru Miaki",
     "isbn": "1975314212",
-    "quantity": 92
+    "quantity": 92,
+    "coverImage": "https://m.media-amazon.com/images/I/8151LO+e+9L._SL1500_.jpg"
 }
 ```
 

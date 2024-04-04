@@ -12,7 +12,8 @@ public class CreateBookRequestFaker {
                 .setAuthor(faker.book().author())
                 .setIsbn(faker.code().isbn10())
                 .setName(faker.book().title())
-                .setQuantity(faker.random().nextInt(0, 50));
+                .setQuantity(faker.random().nextInt(0, 50))
+                .setImageUrl(faker.avatar().image());
     }
 
 
@@ -41,6 +42,11 @@ public class CreateBookRequestFaker {
 
     public CreateBookRequestFaker setQuantity(int quantity) {
         builder.setQuantity(quantity);
+        return this;
+    }
+
+    public CreateBookRequestFaker setCoverImage(String imageUrl) {
+        builder.setImageUrl(imageUrl);
         return this;
     }
 }

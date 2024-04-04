@@ -12,7 +12,8 @@ public final class UpdateBookPayloadFaker {
                 .setQuantity(faker.random().nextInt(0, 100))
                 .setAuthor(faker.book().author())
                 .setName(faker.book().title())
-                .setIsbn(faker.code().isbn10());
+                .setIsbn(faker.code().isbn10())
+                .setImageUrl(faker.avatar().image());
     }
 
     public static UpdateBookPayloadFaker create() {
@@ -40,6 +41,11 @@ public final class UpdateBookPayloadFaker {
 
     public UpdateBookPayloadFaker setQuantity(int quantity) {
         builder.setQuantity(quantity);
+        return this;
+    }
+
+    public UpdateBookPayloadFaker setCoverImage(String coverImage) {
+        builder.setImageUrl(coverImage);
         return this;
     }
 }
