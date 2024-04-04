@@ -4,6 +4,7 @@ import lombok.Builder;
 import lombok.Value;
 import org.jetbrains.annotations.NotNull;
 
+import java.net.URI;
 import java.util.UUID;
 
 @Value
@@ -18,4 +19,6 @@ public class Book {
     @NotNull
     String isbn;
     int quantity;
+    @NotNull
+    URI coverImage;
 }

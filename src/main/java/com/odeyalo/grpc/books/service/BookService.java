@@ -61,6 +61,7 @@ public final class BookService {
                 .author(newBookValues.getAuthor())
                 .name(newBookValues.getName())
                 .isbn(newBookValues.getIsbn())
+                .coverImage(newBookValues.getCoverImage())
                 .build();
     }
 
