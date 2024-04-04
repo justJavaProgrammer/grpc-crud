@@ -26,6 +26,7 @@ public class BookEntity implements Persistable<UUID> {
     String isbn;
     int quantity;
     @NotNull
+    @Column("cover_image")
     URI coverImage;
 
     @Override
